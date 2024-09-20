@@ -1,5 +1,5 @@
-<<<<<<< HEAD
-# eventra_app
+
+# Eventra_app
 
 Eventra Mobile App
 
@@ -16,5 +16,4 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 =======
-# Eventra-FrontEnd
->>>>>>> 4767ca37a9d28627c42d8cadc4b73ec854fa0d93
+
