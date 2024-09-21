@@ -1,43 +1,36 @@
 import 'package:flutter/material.dart';
+import '../widgets/custom_bottom_navigation_bar.dart';
+import '../widgets/custom_app_bar.dart';
 import 'tickets_detail_page.dart';
 
-class TicketsPage extends StatelessWidget {
+class TicketsPage extends StatefulWidget {
+  const TicketsPage({super.key});
+
+  @override
+  _TicketsPageState createState() => _TicketsPageState();
+}
+
+class _TicketsPageState extends State<TicketsPage> {
+  int _selectedIndex = 3;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-          title: Row(
-            children: [
-              Image.asset('assets/logo.png', height: 40), // Ruta del logo
-              SizedBox(width: 10),
-              Text(
-                'Eventra',
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-              ),
-              Spacer(),
-              IconButton(
-                icon: Icon(Icons.notifications, color: Colors.orange),
-                onPressed: () {},
-              ),
-              CircleAvatar(
-                backgroundImage: AssetImage('assets/user_profile.png'), // Imagen de perfil
-              ),
-            ],
-          ),
-          bottom: TabBar(
-            labelColor: Colors.black,
+        appBar: CustomAppBar(
+          title: 'Eventra',
+          bottom: const TabBar(
+            labelColor: Colors.white,
             unselectedLabelColor: Colors.grey,
-            indicatorColor: Colors.orange,
+            indicatorColor: Colors.white,
             tabs: [
               Tab(text: 'Próximo'),
               Tab(text: 'Pasado'),
@@ -47,7 +40,7 @@ class TicketsPage extends StatelessWidget {
         body: TabBarView(
           children: [
             ListView(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               children: [
                 _buildTicketCard(
                   context,
@@ -83,49 +76,38 @@ class TicketsPage extends StatelessWidget {
                 ),
               ],
             ),
-            // Tab de Pasado (por ahora vacío)
-            Center(
-              child: Text('No hay eventos pasados.'),
+            const Center(
+              child: Text(
+                'No hay eventos pasados.',
+                style: TextStyle(color: Colors.black54, fontSize: 16),
+              ),
             ),
           ],
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: '',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              label: '',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.add_circle_outline),
-              label: '',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.assignment),
-              label: '',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: '',
-            ),
-          ],
-          selectedItemColor: Colors.orange,
-          unselectedItemColor: Colors.grey,
+        bottomNavigationBar: CustomBottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
         ),
       ),
     );
   }
 
-  Widget _buildTicketCard(BuildContext context, {required String image, required String title, required String date, required String time, required String description}) {
+  Widget _buildTicketCard(
+      BuildContext context, {
+        required String image,
+        required String title,
+        required String date,
+        required String time,
+        required String description,
+      }) {
     return Card(
-      margin: EdgeInsets.only(bottom: 16.0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      color: Colors.orange.shade200,
+      margin: const EdgeInsets.only(bottom: 16.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 4,
+      color: Colors.white,
+      shadowColor: Colors.grey.shade200,
       child: ListTile(
-        contentPadding: EdgeInsets.all(8.0),
+        contentPadding: const EdgeInsets.all(12.0),
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8.0),
           child: Image.asset(
@@ -137,23 +119,23 @@ class TicketsPage extends StatelessWidget {
         ),
         title: Text(
           title,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(Icons.calendar_today, size: 14, color: Colors.black),
-                SizedBox(width: 5),
-                Text(date, style: TextStyle(fontSize: 12)),
+                const Icon(Icons.calendar_today, size: 14, color: Color(0xFFFFA726)),
+                const SizedBox(width: 5),
+                Text(date, style: const TextStyle(fontSize: 12, color: Colors.black54)),
               ],
             ),
             Row(
               children: [
-                Icon(Icons.access_time, size: 14, color: Colors.black),
-                SizedBox(width: 5),
-                Text(time, style: TextStyle(fontSize: 12)),
+                const Icon(Icons.access_time, size: 14, color: Color(0xFFFFA726)),
+                const SizedBox(width: 5),
+                Text(time, style: const TextStyle(fontSize: 12, color: Colors.black54)),
               ],
             ),
           ],
@@ -173,7 +155,7 @@ class TicketsPage extends StatelessWidget {
               ),
             );
           },
-          child: Text('Ver Detalles', style: TextStyle(color: Colors.orange)),
+          child: const Text('Ver Detalles', style: TextStyle(color: Color(0xFFFFA726))),
         ),
       ),
     );

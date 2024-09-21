@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import '../main.dart';
+import 'login.dart';
 
 class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
+
   @override
   _SignUpPageState createState() => _SignUpPageState();
 }
@@ -13,25 +17,36 @@ class _SignUpPageState extends State<SignUpPage> {
   String _selectedCountry = 'Bangladesh';
 
   @override
+  void dispose() {
+    _dobController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const EventraApp()),
+                  (Route<dynamic> route) => false,
+            );
           },
         ),
-        title: Text(
+        title: const Text(
           'Sign Up',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
@@ -41,6 +56,11 @@ class _SignUpPageState extends State<SignUpPage> {
               TextFormField(
                 decoration: InputDecoration(
                   labelText: 'Name*',
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -49,7 +69,8 @@ class _SignUpPageState extends State<SignUpPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
+
 
               Row(
                 children: [
@@ -59,15 +80,25 @@ class _SignUpPageState extends State<SignUpPage> {
                       decoration: InputDecoration(
                         labelText: 'Phone no.*',
                         hintText: '+880',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Flexible(
                     flex: 3,
                     child: TextFormField(
                       decoration: InputDecoration(
                         hintText: '1710008927',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -79,11 +110,17 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
+
 
               TextFormField(
                 decoration: InputDecoration(
                   labelText: 'Email',
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
@@ -93,13 +130,18 @@ class _SignUpPageState extends State<SignUpPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               TextFormField(
                 controller: _dobController,
                 decoration: InputDecoration(
                   labelText: 'Date of Birth',
-                  suffixIcon: Icon(Icons.calendar_today),
+                  suffixIcon: const Icon(Icons.calendar_today, color: Color(0xFFFFA726)),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 readOnly: true,
                 onTap: () async {
@@ -117,7 +159,8 @@ class _SignUpPageState extends State<SignUpPage> {
                   }
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
+
 
               DropdownButtonFormField<String>(
                 value: _selectedGender,
@@ -134,10 +177,16 @@ class _SignUpPageState extends State<SignUpPage> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Gender*',
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
+              // Dropdown: País
               DropdownButtonFormField<String>(
                 value: _selectedCountry,
                 items: ['Bangladesh', 'Peru', 'USA', 'Other']
@@ -153,13 +202,24 @@ class _SignUpPageState extends State<SignUpPage> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Country*',
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
-              SizedBox(height: 16),
-              // Campo de Dirección
+              const SizedBox(height: 16),
+
+
               TextFormField(
                 decoration: InputDecoration(
                   labelText: 'Address',
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -168,23 +228,35 @@ class _SignUpPageState extends State<SignUpPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
+
 
               Center(
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Processing Data')),
+                        const SnackBar(content: Text('Registered Successfully')),
                       );
+                      Future.delayed(const Duration(seconds: 1), () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginPage()),
+                        );
+                      });
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueGrey[900], // Color del botón
-                    minimumSize: Size(200, 50), // Tamaño del botón
+                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    backgroundColor: const Color(0xFFFFA726),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: Text('Sign up'),
+                  child: const Text(
+                    'Sign up',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
                 ),
               ),
             ],

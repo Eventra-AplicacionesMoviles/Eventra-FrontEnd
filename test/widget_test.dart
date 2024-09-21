@@ -12,7 +12,7 @@ import 'package:eventra_app/main.dart'; // Asegúrate de que esta ruta sea corre
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(EventraApp());
+    await tester.pumpWidget(const EventraApp());
 
     // Verifica que el contador comienza en 0.
     expect(find.text('0'), findsOneWidget);

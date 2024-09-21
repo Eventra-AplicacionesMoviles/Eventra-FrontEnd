@@ -4,7 +4,7 @@ import 'payment_page.dart';
 class EventRegistrationPage extends StatefulWidget {
   final String eventName;
 
-  EventRegistrationPage({required this.eventName});
+  const EventRegistrationPage({super.key, required this.eventName});
 
   @override
   _EventRegistrationPageState createState() => _EventRegistrationPageState();
@@ -45,8 +45,15 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: Text('Inscripción - ${widget.eventName}'),
+        title: Text(
+          'Inscripción - ${widget.eventName}',
+          style: const TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -55,48 +62,41 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Tipo de entrada'),
-                items: _ticketPrices.keys
-                    .map((type) => DropdownMenuItem<String>(
+
+              _buildDropdownField(
+                label: 'Tipo de entrada',
+                items: _ticketPrices.keys.map((type) => DropdownMenuItem<String>(
                   value: type,
                   child: Text(type),
-                ))
-                    .toList(),
+                )).toList(),
+                value: _selectedTicketType,
                 onChanged: (value) {
                   _selectedTicketType = value;
                   _updateTotalCost();
                 },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor seleccione el tipo de entrada';
-                  }
-                  return null;
-                },
               ),
-              DropdownButtonFormField<int>(
-                decoration: InputDecoration(labelText: 'Cantidad de entradas'),
-                value: _selectedTicketQuantity,
-                items: [1, 2, 3, 4, 5]
-                    .map((quantity) => DropdownMenuItem<int>(
+
+              const SizedBox(height: 20),
+
+
+              _buildDropdownField(
+                label: 'Cantidad de entradas',
+                items: [1, 2, 3, 4, 5].map((quantity) => DropdownMenuItem<int>(
                   value: quantity,
                   child: Text(quantity.toString()),
-                ))
-                    .toList(),
+                )).toList(),
+                value: _selectedTicketQuantity,
                 onChanged: (value) {
                   _selectedTicketQuantity = value;
                   _updateTotalCost();
                 },
-                validator: (value) {
-                  if (value == null) {
-                    return 'Por favor seleccione la cantidad de entradas';
-                  }
-                  return null;
-                },
               ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Número de teléfono'),
-                keyboardType: TextInputType.phone,
+
+              const SizedBox(height: 20),
+
+
+              _buildTextField(
+                label: 'Número de teléfono',
                 onChanged: (value) {
                   _phoneNumber = value;
                 },
@@ -106,10 +106,14 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
                   }
                   return null;
                 },
+                keyboardType: TextInputType.phone,
               ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'DNI'),
-                keyboardType: TextInputType.number,
+
+              const SizedBox(height: 20),
+
+
+              _buildTextField(
+                label: 'DNI',
                 onChanged: (value) {
                   _dni = value;
                 },
@@ -119,66 +123,145 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
                   }
                   return null;
                 },
+                keyboardType: TextInputType.number,
               ),
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Servicios adicionales'),
-                items: _additionalServicePrices.keys
-                    .map((service) => DropdownMenuItem<String>(
+
+              const SizedBox(height: 20),
+
+
+              _buildDropdownField(
+                label: 'Servicios adicionales',
+                items: _additionalServicePrices.keys.map((service) => DropdownMenuItem<String>(
                   value: service,
                   child: Text(service),
-                ))
-                    .toList(),
+                )).toList(),
+                value: _selectedAdditionalService,
                 onChanged: (value) {
                   _selectedAdditionalService = value;
                   _updateTotalCost();
                 },
               ),
-              SizedBox(height: 20),
+
+              const SizedBox(height: 30),
+
+
               Text(
                 'Costo total: \$$_totalCost',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text('Inscripción completada'),
-                          content: Text(
-                              'Te has inscrito en el evento. Para finalizar tu registro, realiza el pago.'),
-                          actions: <Widget>[
-                            TextButton(
-                              child: Text('Pagar'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => PaymentPage(
-                                      totalCost: _totalCost,
-                                      ticketType: _selectedTicketType!,
-                                      ticketQuantity: _selectedTicketQuantity!,
-                                      additionalService: _selectedAdditionalService ?? 'Ninguno',
+
+              const SizedBox(height: 30),
+
+
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Inscripción completada'),
+                            content: const Text('Te has inscrito en el evento. Para finalizar tu registro, realiza el pago.'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text('Pagar'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PaymentPage(
+                                        totalCost: _totalCost,
+                                        ticketType: _selectedTicketType!,
+                                        ticketQuantity: _selectedTicketQuantity!,
+                                        additionalService: _selectedAdditionalService ?? 'Ninguno',
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  }
-                },
-                child: Text('Inscribirme'),
+                                  );
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    backgroundColor: const Color(0xFFFFA726), // Naranja
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text(
+                    'Inscribirme',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+
+  Widget _buildTextField({
+    required String label,
+    required void Function(String) onChanged,
+    required String? Function(String?)? validator,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextFormField(
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.grey, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFFFA726), width: 2),
+        ),
+      ),
+      keyboardType: keyboardType,
+      onChanged: onChanged,
+      validator: validator,
+    );
+  }
+
+
+  Widget _buildDropdownField<T>({
+    required String label,
+    required List<DropdownMenuItem<T>> items,
+    required T? value,
+    required void Function(T?) onChanged,
+  }) {
+    return DropdownButtonFormField<T>(
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.grey, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFFFA726), width: 2),
+        ),
+      ),
+      items: items,
+      value: value,
+      onChanged: onChanged,
+      validator: (value) {
+        if (value == null) {
+          return 'Por favor seleccione una opción';
+        }
+        return null;
+      },
     );
   }
 }

@@ -1,187 +1,201 @@
 import 'package:flutter/material.dart';
+import '../widgets/custom_app_bar.dart';
+import '../widgets/custom_bottom_navigation_bar.dart';
 import 'event_inscription.dart';
 
-class EventDetailPage extends StatelessWidget {
+class EventDetailPage extends StatefulWidget {
   final String imagePath;
   final String title;
 
-  EventDetailPage({required this.imagePath, required this.title});
+  const EventDetailPage({super.key, required this.imagePath, required this.title});
+
+  @override
+  _EventDetailPageState createState() => _EventDetailPageState();
+}
+
+class _EventDetailPageState extends State<EventDetailPage> {
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: Row(
-          children: [
-            Image.asset('assets/logo.png', height: 40),
-            SizedBox(width: 10),
-            Text(
-              'Eventra',
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-            ),
-            Spacer(),
-            IconButton(
-              icon: Icon(Icons.notifications, color: Colors.orange),
-              onPressed: () {},
-            ),
-            CircleAvatar(
-              backgroundImage: AssetImage('assets/user_profile.png'),
-            ),
-          ],
-        ),
+      appBar: CustomAppBar(
+        title: 'Eventra',
+        actions: [
+          const CircleAvatar(
+            backgroundImage: AssetImage('assets/user_profile.png'),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.asset(
-                imagePath,
-                width: double.infinity,
-                height: 200,
-                fit: BoxFit.cover,
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  widget.imagePath,
+                  width: double.infinity,
+                  height: 220,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 20),
             Text(
-              title,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              widget.title,
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundImage: AssetImage('assets/event_organizer.png'),
-                  radius: 20,
-                ),
-                SizedBox(width: 10),
-                Column(
+            const SizedBox(height: 10),
+            Card(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              elevation: 3,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                        SizedBox(width: 5),
-                        Text('10 Noviembre', style: TextStyle(color: Colors.grey)),
+                        const Icon(Icons.calendar_today, size: 20, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        Text(
+                          '10 Noviembre',
+                          style: TextStyle(
+                            color: Colors.grey[800],
+                            fontSize: 16,
+                          ),
+                        ),
                       ],
                     ),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
-                        Icon(Icons.access_time, size: 16, color: Colors.grey),
-                        SizedBox(width: 5),
-                        Text('6:00 pm', style: TextStyle(color: Colors.grey)),
+                        const Icon(Icons.access_time, size: 20, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        Text(
+                          '6:00 pm',
+                          style: TextStyle(
+                            color: Colors.grey[800],
+                            fontSize: 16,
+                          ),
+                        ),
                       ],
                     ),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
-                        Icon(Icons.location_on, size: 16, color: Colors.grey),
-                        SizedBox(width: 5),
-                        Text('Parque Central, Lima', style: TextStyle(color: Colors.grey)),
+                        const Icon(Icons.location_on, size: 20, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Parque Central, Lima',
+                          style: TextStyle(
+                            color: Colors.grey[800],
+                            fontSize: 16,
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-            SizedBox(height: 16),
-            Text(
+            const SizedBox(height: 16),
+            const Text(
               'Organizador: euphoriafest',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
-              'Descripción: Un festival de música y arte vibrante que celebra la cultura, la creatividad y la comunidad.',
-              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+              'Un festival de música y arte vibrante que celebra la cultura, la creatividad y la comunidad.',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[700],
+              ),
             ),
-            SizedBox(height: 20),
-            // Botones de acción
+            const SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {},
-                    icon: Icon(Icons.share, color: Colors.white),
-                    label: Text('Compartir'),
+                    icon: const Icon(Icons.share, color: Colors.white),
+                    label: const Text('Compartir'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      backgroundColor: const Color(0xFFFFA726),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {},
-                    icon: Icon(Icons.star_border, color: Colors.white),
-                    label: Text('Favorito'),
+                    icon: const Icon(Icons.star_border, color: Colors.white),
+                    label: const Text('Favorito'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      backgroundColor: const Color(0xFFFFA726),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      // Redirigir a la página de inscripción
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => EventRegistrationPage(eventName: title),
+                          builder: (context) => EventRegistrationPage(eventName: widget.title),
                         ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       backgroundColor: Colors.indigo,
-                      minimumSize: Size(120, 40),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: Text('Inscríbete', style: TextStyle(color: Colors.white)),
+                    child: const Text('Inscríbete', style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 30),
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: '',
-          ),
-        ],
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.grey,
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }

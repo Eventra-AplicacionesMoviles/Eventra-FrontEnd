@@ -6,7 +6,8 @@ class PaymentPage extends StatefulWidget {
   final int ticketQuantity;
   final String additionalService;
 
-  PaymentPage({
+  const PaymentPage({
+    super.key,
     required this.totalCost,
     required this.ticketType,
     required this.ticketQuantity,
@@ -25,200 +26,272 @@ class _PaymentPageState extends State<PaymentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Formulario de Pago'),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFFFFA726)),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: const Text(
+          'Formulario de Pago',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _paymentFormKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
             children: <Widget>[
-              Text(
+              const Text(
                 'Resumen de la inscripción',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: TextFormField(
-                      initialValue: '${widget.ticketQuantity}x ${widget.ticketType}',
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        labelText: 'Entrada',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    flex: 1,
-                    child: TextFormField(
-                      initialValue: '20',
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        labelText: 'Precio',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: TextFormField(
-                      initialValue: widget.additionalService,
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        labelText: 'Servicios adicionales',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    flex: 1,
-                    child: TextFormField(
-                      initialValue: '50',
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        labelText: 'Precio',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-              TextFormField(
-                initialValue: widget.totalCost.toString(),
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Total',
-                  border: OutlineInputBorder(),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
               ),
-              SizedBox(height: 20),
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Elige método de pago'),
-                items: ['Visa', 'PayPal', 'Yape', 'Plin']
-                    .map((method) => DropdownMenuItem<String>(
-                  value: method,
-                  child: Text(method),
-                ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedPaymentMethod = value;
-                  });
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor seleccione un método de pago';
-                  }
-                  return null;
-                },
+              const SizedBox(height: 20),
+              _buildSummaryRow(
+                'Entrada',
+                '${widget.ticketQuantity}x ${widget.ticketType}',
+                '20',
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 10),
+              _buildSummaryRow(
+                'Servicios adicionales',
+                widget.additionalService,
+                '50',
+              ),
+              const SizedBox(height: 10),
+              _buildTotalRow(widget.totalCost.toString()),
+              const SizedBox(height: 30),
+              _buildPaymentMethodDropdown(),
+              const SizedBox(height: 20),
               if (_selectedPaymentMethod == 'Visa') ...[
-                TextFormField(
-                  decoration: InputDecoration(labelText: 'Nombre del titular de la tarjeta'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese el nombre del titular de la tarjeta';
-                    }
-                    return null;
-                  },
+                _buildTextField(
+                  'Nombre del titular de la tarjeta',
+                  Icons.person,
                 ),
-                TextFormField(
-                  decoration: InputDecoration(labelText: 'Número de tarjeta'),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese el número de tarjeta';
-                    }
-                    return null;
-                  },
+                const SizedBox(height: 16),
+                _buildTextField(
+                  'Número de tarjeta',
+                  Icons.credit_card,
+                  isNumber: true,
                 ),
-                TextFormField(
-                  decoration: InputDecoration(labelText: 'CVV'),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese el CVV';
-                    }
-                    return null;
-                  },
+                const SizedBox(height: 16),
+                _buildTextField(
+                  'CVV',
+                  Icons.security,
+                  isNumber: true,
                 ),
-                TextFormField(
-                  decoration: InputDecoration(labelText: 'Fecha de expiración (MM/AA)'),
-                  keyboardType: TextInputType.datetime,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese la fecha de expiración';
-                    }
-                    return null;
-                  },
+                const SizedBox(height: 16),
+                _buildTextField(
+                  'Fecha de expiración (MM/AA)',
+                  Icons.date_range,
+                  isNumber: true,
                 ),
               ] else if (_selectedPaymentMethod == 'PayPal') ...[
-                TextFormField(
-                  decoration: InputDecoration(labelText: 'Correo electrónico de PayPal'),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese el correo electrónico de PayPal';
-                    }
-                    return null;
-                  },
+                _buildTextField(
+                  'Correo electrónico de PayPal',
+                  Icons.email,
+                  isEmail: true,
                 ),
               ],
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text('Cancelar'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_paymentFormKey.currentState!.validate()) {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('Pago completado'),
-                              content: Text(
-                                  'Gracias por tu inscripción, el pago se ha completado con éxito.'),
-                              actions: <Widget>[
-                                TextButton(
-                                  child: Text('Aceptar'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                    Navigator.of(context).pop(); // Cierra ambas vistas
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      }
-                    },
-                    child: Text('Pagar'),
-                  ),
-                ],
-              ),
+              const SizedBox(height: 30),
+              _buildButtonRow(context),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSummaryRow(String label, String value, String price) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 3,
+          child: TextFormField(
+            initialValue: value,
+            readOnly: true,
+            decoration: InputDecoration(
+              labelText: label,
+              labelStyle: const TextStyle(color: Colors.black87),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          flex: 1,
+          child: TextFormField(
+            initialValue: price,
+            readOnly: true,
+            decoration: InputDecoration(
+              labelText: 'Precio',
+              labelStyle: const TextStyle(color: Colors.black87),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTotalRow(String total) {
+    return TextFormField(
+      initialValue: total,
+      readOnly: true,
+      decoration: InputDecoration(
+        labelText: 'Total',
+        labelStyle: const TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.bold,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodDropdown() {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: 'Elige método de pago',
+        labelStyle: const TextStyle(color: Colors.black87),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+      items: ['Visa', 'PayPal', 'Yape', 'Plin']
+          .map((method) => DropdownMenuItem<String>(
+        value: method,
+        child: Text(method),
+      ))
+          .toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedPaymentMethod = value;
+        });
+      },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Por favor seleccione un método de pago';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildTextField(
+      String label,
+      IconData icon, {
+        bool isNumber = false,
+        bool isEmail = false,
+      }) {
+    return TextFormField(
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.black87),
+        prefixIcon: Icon(icon, color: const Color(0xFFFFA726)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 16,
+          horizontal: 16,
+        ),
+      ),
+      keyboardType: isNumber
+          ? TextInputType.number
+          : isEmail
+          ? TextInputType.emailAddress
+          : TextInputType.text,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Por favor ingrese $label';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildButtonRow(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.grey[200],
+            minimumSize: const Size(120, 50),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+          ),
+          child: const Text(
+            'Cancelar',
+            style: TextStyle(color: Colors.black87),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (_paymentFormKey.currentState!.validate()) {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Pago completado'),
+                    content: const Text(
+                        'Gracias por tu inscripción, el pago se ha completado con éxito.'),
+                    actions: <Widget>[
+                      TextButton(
+                        child: const Text('Aceptar'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFFFA726),
+            minimumSize: const Size(120, 50),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+          ),
+          child: const Text('Pagar'),
+        ),
+      ],
     );
   }
 }

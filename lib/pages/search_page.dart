@@ -1,55 +1,63 @@
 import 'package:flutter/material.dart';
 import 'filter_page.dart';
+import '../widgets/custom_bottom_navigation_bar.dart';
+import '../widgets/custom_app_bar.dart';
 
-class SearchPage extends StatelessWidget {
+class SearchPage extends StatefulWidget {
+  const SearchPage({super.key});
+
+  @override
+  _SearchPageState createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  int _selectedIndex = 1;
+
+  final List<Widget> _pages = [
+    Center(child: Text('Inicio')),
+    Center(child: Text('Página de Búsqueda')),
+    Center(child: Text('Reservas')),
+    Center(child: Text('Entradas')),
+    Center(child: Text('Perfil')),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: TextField(
-          decoration: InputDecoration(
-            hintText: 'Search',
-            prefixIcon: Icon(Icons.search, color: Colors.black),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_none, color: Colors.black),
-            onPressed: () {},
-          ),
-          CircleAvatar(
-            backgroundImage: AssetImage('assets/user_profile.png'),
-          ),
-        ],
+      appBar: CustomAppBar(
+        title: 'Buscar',
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Filtro añadido arriba de los eventos
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Categorías',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Buscar',
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
                 ),
+                const SizedBox(width: 10),
                 IconButton(
-                  icon: Icon(Icons.filter_list, color: Colors.black),
+                  icon: Icon(Icons.filter_list, color: Colors.grey),
                   onPressed: () {
-
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => FiltersPage()),
@@ -58,82 +66,94 @@ class SearchPage extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                categoryButton(Icons.music_note, 'Música'),
-                categoryButton(Icons.book, 'Educación'),
-                categoryButton(Icons.brush, 'Arte'),
-                Icon(Icons.arrow_forward_ios),
-              ],
+            const SizedBox(height: 20),
+            const Text(
+              'Categorías',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFFFA726)),
             ),
-            SizedBox(height: 20),
-            Text(
-              'Para ti',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            Expanded(
-              child: ListView(
+            const SizedBox(height: 10),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
                 children: [
-                  eventCard('Exposición', '15 Octubre', '4:00 pm', 'assets/music_festival.png'),
-                  eventCard('Taller', '25 Setiembre', '3:00 pm', 'assets/workshop.png'),
-                  eventCard('Obra', '28 Setiembre', '3:00 pm', 'assets/theater.png'),
+                  categoryButton(Icons.music_note, 'Música'),
+                  const SizedBox(width: 10),
+                  categoryButton(Icons.theater_comedy, 'Teatro'),
+                  const SizedBox(width: 10),
+                  categoryButton(Icons.sports_soccer, 'Deportes'),
                 ],
               ),
             ),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {},
-                child: Text('Ver más'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-              ),
+            const SizedBox(height: 20),
+            const Text(
+              'Eventos',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFFFA726)),
             ),
+            const SizedBox(height: 10),
+            eventCard('Concierto', '10 Noviembre', '6:00 pm', 'assets/concert.png'),
+            eventCard('Obra de teatro', '15 Octubre', '4:00 pm', 'assets/theater.png'),
           ],
         ),
+      ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }
 
   Widget categoryButton(IconData icon, String label) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 30,
-          backgroundColor: Colors.blueAccent,
-          child: Icon(icon, color: Colors.white, size: 30),
-        ),
-        SizedBox(height: 8),
-        Text(label),
-      ],
+    return ElevatedButton.icon(
+      onPressed: () {},
+      icon: Icon(icon, color: Colors.white),
+      label: Text(label, style: TextStyle(color: Colors.white)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFFFFA726),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
     );
   }
 
   Widget eventCard(String title, String date, String time, String imagePath) {
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 4,
       child: ListTile(
-        leading: Image.asset(imagePath, width: 60, height: 60, fit: BoxFit.cover),
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Row(
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Image.asset(imagePath, width: 80, fit: BoxFit.cover),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.calendar_today, size: 14),
-            SizedBox(width: 5),
-            Text(date),
-            SizedBox(width: 20),
-            Icon(Icons.access_time, size: 14),
-            SizedBox(width: 5),
-            Text(time),
+            Row(
+              children: [
+                const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                const SizedBox(width: 5),
+                Text(date, style: const TextStyle(color: Colors.grey)),
+              ],
+            ),
+            Row(
+              children: [
+                const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                const SizedBox(width: 5),
+                Text(time, style: const TextStyle(color: Colors.grey)),
+              ],
+            ),
           ],
         ),
-        trailing: IconButton(
-          icon: Icon(Icons.bookmark_border),
+        trailing: ElevatedButton(
           onPressed: () {},
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFFFA726),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: const Text('Ver', style: TextStyle(color: Colors.white)),
         ),
       ),
     );

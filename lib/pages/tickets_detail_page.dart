@@ -7,7 +7,8 @@ class TicketDetailPage extends StatelessWidget {
   final String image;
   final String description;
 
-  TicketDetailPage({
+  const TicketDetailPage({
+    super.key,
     required this.title,
     required this.date,
     required this.time,
@@ -20,126 +21,163 @@ class TicketDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0,
+        elevation: 1,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text(
+        title: const Text(
           'Mi Ticket',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications, color: Colors.orange),
+            icon: const Icon(Icons.notifications, color: Color(0xFFFFA726)),
             onPressed: () {},
           ),
-          CircleAvatar(
+          const CircleAvatar(
             backgroundImage: AssetImage('assets/user_profile.png'),
           ),
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Imagen del evento
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10.0),
-              child: Image.asset(image, fit: BoxFit.cover, width: double.infinity),
-            ),
-            SizedBox(height: 16),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12.0),
+                child: Image.asset(
+                  image,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: 350,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                elevation: 3,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        title,
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _buildInfoRow(Icons.calendar_today, date),
+                            const SizedBox(height: 8),
+                            _buildInfoRow(Icons.access_time, time),
+                            const SizedBox(height: 8),
+                            _buildInfoRow(
+                              Icons.location_on,
+                              'Parque Central, Lima',
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Descripción:',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              description,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      SizedBox(height: 8),
-                      Row(
+                      const SizedBox(width: 16),
+                      Column(
                         children: [
-                          Icon(Icons.calendar_today, size: 18),
-                          SizedBox(width: 8),
-                          Text(date),
+                          Image.asset(
+                            'assets/qr_code.png',
+                            width: 100.0,
+                            height: 100.0,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'QR Code',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
                         ],
                       ),
-                      SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(Icons.access_time, size: 18),
-                          SizedBox(width: 8),
-                          Text(time),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(Icons.location_on, size: 18),
-                          SizedBox(width: 8),
-                          Text('Parque Central, Lima'),
-                        ],
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        'Descripción:',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 8),
-                      Text(description),
                     ],
                   ),
                 ),
-                SizedBox(width: 16),
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0),
-                  child: Image.asset(
-                    'assets/qr_code.png',
-                    width: 80.0,
-                    height: 80.0,
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: ElevatedButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.download),
+                  label: const Text('Descargar ticket'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFA726),
+                    foregroundColor: Colors.white,
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: 16),
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: Icon(Icons.download),
-                label: Text('Descargar ticket'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                ),
               ),
-            ),
-            Spacer(),
-            Center(
-              child: IconButton(
-                icon: Icon(Icons.share, color: Colors.blue, size: 30),
-                onPressed: () {},
-              ),
-            ),
-          ],
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.assignment), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
         ],
-        selectedItemColor: Colors.orange,
+        selectedItemColor: const Color(0xFFFFA726),
         unselectedItemColor: Colors.grey,
       ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String info) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: const Color(0xFFFFA726)),
+        const SizedBox(width: 8),
+        Text(
+          info,
+          style: const TextStyle(fontSize: 14, color: Colors.black87),
+        ),
+      ],
     );
   }
 }
