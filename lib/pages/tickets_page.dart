@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'tickets_detail_page.dart';
 
 class TicketsPage extends StatelessWidget {
   @override
@@ -29,7 +30,7 @@ class TicketsPage extends StatelessWidget {
                 onPressed: () {},
               ),
               CircleAvatar(
-                backgroundImage: AssetImage('assets/user_profile.jpg'), // Imagen de perfil
+                backgroundImage: AssetImage('assets/user_profile.png'), // Imagen de perfil
               ),
             ],
           ),
@@ -45,7 +46,6 @@ class TicketsPage extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-
             ListView(
               padding: EdgeInsets.all(16.0),
               children: [
@@ -55,6 +55,7 @@ class TicketsPage extends StatelessWidget {
                   title: 'Jazz Festival',
                   date: '25 Noviembre',
                   time: '7:00 pm',
+                  description: 'Un festival de jazz con artistas internacionales.',
                 ),
                 _buildTicketCard(
                   context,
@@ -62,6 +63,7 @@ class TicketsPage extends StatelessWidget {
                   title: 'Music Festival',
                   date: '10 Noviembre',
                   time: '6:00 pm',
+                  description: 'Un festival de música y arte vibrante que celebra la cultura.',
                 ),
                 _buildTicketCard(
                   context,
@@ -69,6 +71,7 @@ class TicketsPage extends StatelessWidget {
                   title: 'Festival de comida',
                   date: '5 Octubre',
                   time: '12:00 pm',
+                  description: 'Un festival para degustar comidas de diferentes culturas.',
                 ),
                 _buildTicketCard(
                   context,
@@ -76,6 +79,7 @@ class TicketsPage extends StatelessWidget {
                   title: 'Taller de cerámica',
                   date: '10 Octubre',
                   time: '6:00 pm',
+                  description: 'Un taller donde puedes aprender a hacer piezas de cerámica.',
                 ),
               ],
             ),
@@ -115,9 +119,7 @@ class TicketsPage extends StatelessWidget {
     );
   }
 
-  // Función para construir una tarjeta de ticket
-  Widget _buildTicketCard(BuildContext context,
-      {required String image, required String title, required String date, required String time}) {
+  Widget _buildTicketCard(BuildContext context, {required String image, required String title, required String date, required String time, required String description}) {
     return Card(
       margin: EdgeInsets.only(bottom: 16.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -155,6 +157,23 @@ class TicketsPage extends StatelessWidget {
               ],
             ),
           ],
+        ),
+        trailing: TextButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TicketDetailPage(
+                  title: title,
+                  date: date,
+                  time: time,
+                  image: image,
+                  description: description,
+                ),
+              ),
+            );
+          },
+          child: Text('Ver Detalles', style: TextStyle(color: Colors.orange)),
         ),
       ),
     );

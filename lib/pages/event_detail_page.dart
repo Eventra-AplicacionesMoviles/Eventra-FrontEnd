@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'event_inscription.dart';
 
 class EventDetailPage extends StatelessWidget {
   final String imagePath;
@@ -133,7 +134,15 @@ class EventDetailPage extends StatelessWidget {
                 SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // Redirigir a la página de inscripción
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EventRegistrationPage(eventName: title),
+                        ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.indigo,
                       minimumSize: Size(120, 40),
@@ -144,7 +153,7 @@ class EventDetailPage extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 20), // Añadido para evitar espacio vacío
+            SizedBox(height: 20),
           ],
         ),
       ),

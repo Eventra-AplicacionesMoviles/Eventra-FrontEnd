@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'event_detail_page.dart';
-import 'tickets_page.dart'; // Importa la página de Tickets
+import 'tickets_page.dart';
+import 'search_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -8,15 +9,20 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0; // Índice inicial del BottomNavigationBar
+  int _selectedIndex = 0;
 
-  // Método para cambiar de página
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
 
-    if (index == 3) { // Índice del botón de Tickets
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SearchPage()),
+      );
+    } else if (index == 3) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => TicketsPage()),
@@ -54,7 +60,6 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Saludo y Sección de Próximos Eventos
             Text(
               'Hello, user!',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -65,7 +70,6 @@ class _HomePageState extends State<HomePage> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
-
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -77,7 +81,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SizedBox(height: 20),
-
             Text(
               'Eventos populares',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -87,7 +90,6 @@ class _HomePageState extends State<HomePage> {
             _buildPopularEventTile(context, 'Exposición', '15 Octubre', '4:00 pm', 'assets/exhibition.png'),
             _buildPopularEventTile(context, 'Taller', '25 Setiembre', '3:00 pm', 'assets/workshop.png'),
             SizedBox(height: 20),
-
             Center(
               child: ElevatedButton(
                 onPressed: () {},
@@ -126,8 +128,8 @@ class _HomePageState extends State<HomePage> {
         ],
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.grey,
-        currentIndex: _selectedIndex, // Muestra el índice seleccionado
-        onTap: _onItemTapped, // Llama al método cuando se hace clic
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }
@@ -172,7 +174,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Widget para Eventos Populares
   Widget _buildPopularEventTile(BuildContext context, String title, String date, String time, String imagePath) {
     return Card(
       color: Color(0xFFFFA726),
