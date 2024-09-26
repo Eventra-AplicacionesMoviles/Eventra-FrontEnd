@@ -1,3 +1,4 @@
+import 'package:eventra_app/pages/add_event_page.dart';
 import 'package:flutter/material.dart';
 import '../pages/search_page.dart';
 import '../pages/reservation_page.dart';
@@ -23,6 +24,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
         BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+        BottomNavigationBarItem(icon: Icon(Icons.add_box), label: ''),
         BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: ''),
         BottomNavigationBarItem(icon: Icon(Icons.assignment), label: ''),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
@@ -31,7 +33,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
       unselectedItemColor: Colors.grey,
       currentIndex: currentIndex,
       onTap: (index) {
-        if (index == 4) {
+        if (index == 5) {
           _showBottomSheet(context);
         } else {
           onTap(index);
@@ -50,7 +52,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SearchPage()));
         break;
       case 2:
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ReservationPage()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AddEventPage()));
         break;
       case 3:
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const TicketsPage()));

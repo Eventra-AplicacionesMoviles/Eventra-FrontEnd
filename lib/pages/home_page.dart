@@ -1,3 +1,4 @@
+import 'package:eventra_app/pages/add_event_page.dart';
 import 'package:flutter/material.dart';
 import 'event_detail_page.dart';
 import 'tickets_page.dart';
@@ -29,14 +30,20 @@ class _HomePageState extends State<HomePage> {
     } else if (index == 2) {
       Navigator.push(
         context,
+        MaterialPageRoute(builder: (context) => const AddEventPage()),
+      );
+    }
+    else if (index == 3) {
+      Navigator.push(
+        context,
         MaterialPageRoute(builder: (context) => const ReservationPage()),
       );
-    } else if (index == 3) {
+    } else if (index == 4) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const TicketsPage()),
       );
-    } else if (index == 4) {
+    } else if (index == 5) {
       _showBottomSheet();
     }
   }
