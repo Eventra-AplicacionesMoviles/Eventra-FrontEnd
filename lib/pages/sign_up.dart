@@ -151,13 +151,13 @@ class _SignUpPageState extends State<SignUpPage> {
                     firstDate: DateTime(1900),
                     lastDate: DateTime.now(),
                   );
-                  if (pickedDate != null) {
-                    setState(() {
+                  setState(() {
+                    if (pickedDate != null) {
                       _dobController.text =
                       "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
-                    });
-                  }
-                },
+                    }
+                  });
+                                },
               ),
               const SizedBox(height: 16),
 

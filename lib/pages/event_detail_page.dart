@@ -1,3 +1,4 @@
+import 'package:eventra_app/pages/review_event_page.dart';
 import 'package:flutter/material.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
@@ -138,6 +139,25 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 fontSize: 16,
                 color: Colors.grey[700],
               ),
+            ),
+            const SizedBox(height: 8),
+            const Divider(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Reviews (20)',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                IconButton(onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ReviewEventPage()
+                    ),
+                  );
+                }, icon: const Icon(Icons.arrow_right))
+              ],
             ),
             const SizedBox(height: 30),
             Row(
