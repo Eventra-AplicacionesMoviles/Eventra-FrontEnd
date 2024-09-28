@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../main.dart';
 import 'login.dart';
 
@@ -12,6 +14,11 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _dobController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   String _selectedGender = 'Male';
   String _selectedCountry = 'Bangladesh';
@@ -19,7 +26,44 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   void dispose() {
     _dobController.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _addressController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _register() async {
+    final url = Uri.parse('http://10.0.2.2:8080/api/auth/register');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'firstName': _nameController.text.split(' ')[0],
+        'lastName': _nameController.text.split(' ').length > 1 ? _nameController.text.split(' ').sublist(1).join(' ') : '',
+        'email': _emailController.text,
+        'password': _passwordController.text,
+        'typeId': 1, // Reemplaza con el ID de tipo de usuario correcto
+        'url': _addressController.text, // Asumiendo que 'url' es la dirección
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registered Successfully')),
+      );
+      Future.delayed(const Duration(seconds: 1), () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registration Failed')),
+      );
+    }
   }
 
   @override
@@ -52,8 +96,8 @@ class _SignUpPageState extends State<SignUpPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               TextFormField(
+                controller: _nameController,
                 decoration: InputDecoration(
                   labelText: 'Name*',
                   filled: true,
@@ -70,52 +114,29 @@ class _SignUpPageState extends State<SignUpPage> {
                 },
               ),
               const SizedBox(height: 16),
-
-
-              Row(
-                children: [
-                  Flexible(
-                    flex: 1,
-                    child: TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Phone no.*',
-                        hintText: '+880',
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(
+                  labelText: 'Password*',
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(width: 10),
-                  Flexible(
-                    flex: 3,
-                    child: TextFormField(
-                      decoration: InputDecoration(
-                        hintText: '1710008927',
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your phone number';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
+                ),
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
-
-
               TextFormField(
+                controller: _emailController,
                 decoration: InputDecoration(
-                  labelText: 'Email',
+                  labelText: 'Email*',
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
@@ -131,7 +152,6 @@ class _SignUpPageState extends State<SignUpPage> {
                 },
               ),
               const SizedBox(height: 16),
-
               TextFormField(
                 controller: _dobController,
                 decoration: InputDecoration(
@@ -160,8 +180,6 @@ class _SignUpPageState extends State<SignUpPage> {
                 },
               ),
               const SizedBox(height: 16),
-
-
               DropdownButtonFormField<String>(
                 value: _selectedGender,
                 items: ['Male', 'Female', 'Other']
@@ -185,8 +203,6 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Dropdown: País
               DropdownButtonFormField<String>(
                 value: _selectedCountry,
                 items: ['Bangladesh', 'Peru', 'USA', 'Other']
@@ -210,9 +226,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
               ),
               const SizedBox(height: 16),
-
-
               TextFormField(
+                controller: _addressController,
                 decoration: InputDecoration(
                   labelText: 'Address',
                   filled: true,
@@ -229,21 +244,11 @@ class _SignUpPageState extends State<SignUpPage> {
                 },
               ),
               const SizedBox(height: 30),
-
-
               Center(
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Registered Successfully')),
-                      );
-                      Future.delayed(const Duration(seconds: 1), () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginPage()),
-                        );
-                      });
+                      _register();
                     }
                   },
                   style: ElevatedButton.styleFrom(

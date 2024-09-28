@@ -18,10 +18,10 @@ class EventraApp extends StatelessWidget {
         fontFamily: 'Roboto',
         primarySwatch: Colors.blueGrey,
       ),
-      home: const WelcomePage(), // Página inicial es WelcomePage
+      home: const WelcomePage(),
       routes: {
         '/login': (context) => const LoginPage(),
-        '/welcome': (context) => const WelcomePage(), // Añadir ruta para WelcomePage
+        '/welcome': (context) => const WelcomePage(),
         '/signup': (context) => const SignUpPage(),
       },
     );

@@ -1,5 +1,7 @@
+// profile_page.dart
 import 'package:flutter/material.dart';
 import 'edit_profile_page.dart';
+import 'my_events_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -91,13 +93,38 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MyEventsPage()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFA726),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  ),
+                  child: const Text(
+                    'Mis Eventos',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
   }
-
 
   Widget _buildInfoTile(IconData icon, String text, BuildContext context) {
     return Card(
