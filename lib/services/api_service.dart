@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'event_request.dart';
-import 'category_event_response.dart';
-import 'event_response.dart';
+import '../models/event_request.dart';
+import '../models/category_event_response.dart';
+import '../models/event_response.dart';
 import 'package:flutter/foundation.dart';
 
 class ApiService {

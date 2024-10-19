@@ -7,9 +7,9 @@ import 'package:intl/intl.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
 
-import 'api_service.dart';
-import 'event_request.dart';
-import 'category_event_response.dart';
+import '../services/api_service.dart';
+import '../models/event_request.dart';
+import '../models/category_event_response.dart';
 
 class AddEventPage extends StatefulWidget {
   const AddEventPage({super.key});

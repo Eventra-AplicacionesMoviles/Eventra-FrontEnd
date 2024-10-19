@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'api_service.dart';
-import 'event_response.dart';
+import '../services/api_service.dart';
+import '../models/event_response.dart';
 import 'package:intl/intl.dart';
 
 class MyEventsPage extends StatefulWidget {
