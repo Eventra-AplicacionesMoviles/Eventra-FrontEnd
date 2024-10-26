@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+// import 'package:http/http.dart' as http;
+// import 'dart:convert';
 import 'home_page.dart';
 import 'sign_up.dart';
 
@@ -16,30 +16,49 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  Future<void> _login() async {
-    final response = await http.post(
-      Uri.parse('http://10.0.2.2:8080/api/auth/login'), // Update with the correct local IP and port
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'email': _emailController.text,
-        'password': _passwordController.text,
-      }),
-    );
+  // Future<void> _login() async {
+  //   final response = await http.post(
+  //     Uri.parse('http://10.0.2.2:8080/api/auth/login'), // Actualiza con la IP y puerto correctos
+  //     headers: <String, String>{
+  //       'Content-Type': 'application/json; charset=UTF-8',
+  //     },
+  //     body: jsonEncode(<String, String>{
+  //       'email': _emailController.text,
+  //       'password': _passwordController.text,
+  //     }),
+  //   );
 
-    if (response.statusCode == 200) {
-      // Handle successful login
+  //   if (response.statusCode == 200) {
+  //     // Redirección si el login es exitoso
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => const HomePage()),
+  //     );
+  //   } else {
+  //     // Manejo del error en el login
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Login failed')),
+  //     );
+  //   }
+  // }
+
+  // Función de login estática sin backend
+  void _login() {
+    // Ejemplo de credenciales estáticas para la prueba de login
+    const String staticEmail = 'admin';
+    const String staticPassword = '123';
+
+    if (_emailController.text == staticEmail &&
+        _passwordController.text == staticPassword) {
+      // Simulación de login exitoso
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
     } else {
-      // Log the response for debugging
-      print('Login failed: ${response.statusCode} - ${response.body}');
-      // Handle login error
+      // Mensaje si el login falla
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login failed')),
+        const SnackBar(content: Text('Invalid email or password')),
       );
     }
   }
@@ -103,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const SignUpPage()), // Use SignUpPage
+                        MaterialPageRoute(builder: (context) => const SignUpPage()),
                       );
                     },
                     child: Text(

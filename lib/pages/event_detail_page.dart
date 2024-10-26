@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
 import 'event_inscription.dart';
 
@@ -20,18 +19,18 @@ class _EventDetailPageState extends State<EventDetailPage> {
     setState(() {
       _selectedIndex = index;
     });
-
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        title: 'Eventra',
+      appBar: AppBar(
+        title: const Text('Eventra'),
         actions: [
           const CircleAvatar(
             backgroundImage: AssetImage('assets/user_profile.png'),
           ),
+          const SizedBox(width: 16), // Espacio entre el título y el avatar
         ],
       ),
       body: SingleChildScrollView(

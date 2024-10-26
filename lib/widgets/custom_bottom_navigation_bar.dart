@@ -36,7 +36,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
         if (index == 5) {
           _showBottomSheet(context);
         } else {
-          onTap(index);
+          onTap(index);  // Invoca la función onTap con el índice seleccionado
           _navigateToPage(context, index);
         }
       },
@@ -46,19 +46,34 @@ class CustomBottomNavigationBar extends StatelessWidget {
   void _navigateToPage(BuildContext context, int index) {
     switch (index) {
       case 0:
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
         break;
       case 1:
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SearchPage()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SearchPage()),
+        );
         break;
       case 2:
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AddEventPage()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const AddEventPage()),
+        );
         break;
       case 3:
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const TicketsPage()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const TicketsPage()),
+        );
         break;
       case 4:
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ProfilePage()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ReservationPage()),
+        );
         break;
     }
   }
@@ -90,21 +105,21 @@ class CustomBottomNavigationBar extends StatelessWidget {
                 leading: const Icon(Icons.account_circle, color: Colors.black87),
                 title: const Text('Cambiar cuenta'),
                 onTap: () {
-
+                  // Implementa la lógica para cambiar la cuenta
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.help, color: Colors.black87),
                 title: const Text('Ayuda'),
                 onTap: () {
-
+                  // Implementa la lógica para la ayuda
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.description, color: Colors.black87),
                 title: const Text('Términos y condiciones'),
                 onTap: () {
-
+                  // Implementa la lógica para los términos y condiciones
                 },
               ),
               ListTile(

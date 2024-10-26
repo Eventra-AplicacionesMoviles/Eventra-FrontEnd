@@ -10,13 +10,63 @@ class ReservationPage extends StatefulWidget {
 }
 
 class _ReservationPageState extends State<ReservationPage> {
-  int _selectedIndex = 2;
+  int _selectedIndex = 4; // Asegúrate de que el índice corresponde a la pestaña actual
+
+  // Lista de reservaciones
+  List<Map<String, String>> reservations = [
+    {
+      'title': 'Concierto',
+      'date': '10 Noviembre',
+      'time': '6:00 pm',
+      'imagePath': 'assets/concert.png',
+    },
+    {
+      'title': 'Obra de teatro',
+      'date': '15 Octubre',
+      'time': '4:00 pm',
+      'imagePath': 'assets/theater.png',
+    },
+  ];
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
 
+  // Método para eliminar una reservación
+  void _deleteReservation(int index) {
+    setState(() {
+      reservations.removeAt(index);
+    });
+  }
+
+  // Método para mostrar diálogo de confirmación
+  void _showDeleteConfirmationDialog(int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar Eliminación'),
+          content: const Text('¿Estás seguro de que deseas cancelar esta reservación?'),
+          actions: [
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Eliminar'),
+              onPressed: () {
+                _deleteReservation(index);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -24,12 +74,19 @@ class _ReservationPageState extends State<ReservationPage> {
     return Scaffold(
       appBar: CustomAppBar(title: 'Mis Reservaciones'),
       backgroundColor: const Color(0xFFF5F5F5),
-      body: ListView(
+      body: ListView.builder(
         padding: const EdgeInsets.all(16.0),
-        children: [
-          _buildReservationTile(context, 'Concierto', '10 Noviembre', '6:00 pm', 'assets/concert.png'),
-          _buildReservationTile(context, 'Obra de teatro', '15 Octubre', '4:00 pm', 'assets/theater.png'),
-        ],
+        itemCount: reservations.length,
+        itemBuilder: (context, index) {
+          return _buildReservationTile(
+            context,
+            reservations[index]['title']!,
+            reservations[index]['date']!,
+            reservations[index]['time']!,
+            reservations[index]['imagePath']!,
+            index,
+          );
+        },
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _selectedIndex,
@@ -38,7 +95,8 @@ class _ReservationPageState extends State<ReservationPage> {
     );
   }
 
-  Widget _buildReservationTile(BuildContext context, String title, String date, String time, String imagePath) {
+  Widget _buildReservationTile(
+      BuildContext context, String title, String date, String time, String imagePath, int index) {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
@@ -98,10 +156,12 @@ class _ReservationPageState extends State<ReservationPage> {
             ),
             PopupMenuButton<String>(
               onSelected: (value) {
-                // Popup menu actions
+                if (value == 'Cancelar') {
+                  _showDeleteConfirmationDialog(index); // Muestra diálogo de confirmación
+                }
               },
               itemBuilder: (BuildContext context) {
-                return {'Cancelar', 'Modificar'}.map((String choice) {
+                return {'Cancelar'}.map((String choice) {
                   return PopupMenuItem<String>(
                     value: choice,
                     child: Text(choice),

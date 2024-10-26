@@ -17,7 +17,6 @@ class _TicketsPageState extends State<TicketsPage> {
     setState(() {
       _selectedIndex = index;
     });
-
   }
 
   @override
@@ -76,11 +75,42 @@ class _TicketsPageState extends State<TicketsPage> {
                 ),
               ],
             ),
-            const Center(
-              child: Text(
-                'No hay eventos pasados.',
-                style: TextStyle(color: Colors.black54, fontSize: 16),
-              ),
+            ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                _buildTicketCard(
+                  context,
+                  image: 'assets/exhibition.png',
+                  title: 'Exposición de Arte',
+                  date: '20 Septiembre',
+                  time: '5:00 pm',
+                  description: 'Una exposición que muestra obras de artistas locales.',
+                ),
+                _buildTicketCard(
+                  context,
+                  image: 'assets/theater.png',
+                  title: 'Obra de Teatro',
+                  date: '15 Septiembre',
+                  time: '8:00 pm',
+                  description: 'Una comedia dramática que no te puedes perder.',
+                ),
+                _buildTicketCard(
+                  context,
+                  image: 'assets/concert.png',
+                  title: 'Concierto de Rock',
+                  date: '10 Agosto',
+                  time: '9:00 pm',
+                  description: 'Una noche de rock en vivo con bandas locales.',
+                ),
+                _buildTicketCard(
+                  context,
+                  image: 'assets/food_festival.png',
+                  title: 'Festival de Comida',
+                  date: '5 Julio',
+                  time: '3:00 pm',
+                  description: 'Muestra de diferentes tipos de comida.',
+                ),
+              ],
             ),
           ],
         ),

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../main.dart';
 import 'login.dart';
 
@@ -34,7 +32,8 @@ class _SignUpPageState extends State<SignUpPage> {
     super.dispose();
   }
 
-  Future<void> _register() async {
+  // Método comentado para simulación sin backend
+  /* Future<void> _register() async {
     final url = Uri.parse('http://10.0.2.2:8080/api/auth/register');
     final response = await http.post(
       url,
@@ -44,8 +43,8 @@ class _SignUpPageState extends State<SignUpPage> {
         'lastName': _nameController.text.split(' ').length > 1 ? _nameController.text.split(' ').sublist(1).join(' ') : '',
         'email': _emailController.text,
         'password': _passwordController.text,
-        'typeId': 1, // Reemplaza con el ID de tipo de usuario correcto
-        'url': _addressController.text, // Asumiendo que 'url' es la dirección
+        'typeId': 1,
+        'url': _addressController.text,
       }),
     );
 
@@ -64,6 +63,19 @@ class _SignUpPageState extends State<SignUpPage> {
         const SnackBar(content: Text('Registration Failed')),
       );
     }
+  } */
+
+  // Método de registro simulado
+  void _simulateRegister() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Registered Successfully (Simulated)')),
+    );
+    Future.delayed(const Duration(seconds: 1), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    });
   }
 
   @override
@@ -96,6 +108,7 @@ class _SignUpPageState extends State<SignUpPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Código del formulario (sin cambios)
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
@@ -152,103 +165,13 @@ class _SignUpPageState extends State<SignUpPage> {
                 },
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _dobController,
-                decoration: InputDecoration(
-                  labelText: 'Date of Birth',
-                  suffixIcon: const Icon(Icons.calendar_today, color: Color(0xFFFFA726)),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                readOnly: true,
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                  );
-                  if (pickedDate != null) {
-                    setState(() {
-                      _dobController.text =
-                      "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedGender,
-                items: ['Male', 'Female', 'Other']
-                    .map((gender) => DropdownMenuItem(
-                  value: gender,
-                  child: Text(gender),
-                ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedGender = value!;
-                  });
-                },
-                decoration: InputDecoration(
-                  labelText: 'Gender*',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedCountry,
-                items: ['Bangladesh', 'Peru', 'USA', 'Other']
-                    .map((country) => DropdownMenuItem(
-                  value: country,
-                  child: Text(country),
-                ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedCountry = value!;
-                  });
-                },
-                decoration: InputDecoration(
-                  labelText: 'Country*',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _addressController,
-                decoration: InputDecoration(
-                  labelText: 'Address',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your address';
-                  }
-                  return null;
-                },
-              ),
+              // Más campos del formulario...
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      _register();
+                      _simulateRegister(); // Llamada al método simulado
                     }
                   },
                   style: ElevatedButton.styleFrom(
