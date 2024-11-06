@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 class NotificationsPage extends StatelessWidget {
-  const NotificationsPage({super.key});
+  final bool isAdmin;
+  final int userId; // Add userId parameter
+
+  const NotificationsPage({super.key, required this.isAdmin, required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +47,7 @@ class NotificationsPage extends StatelessWidget {
         ),
         trailing: const Icon(Icons.arrow_forward, color: Colors.grey),
         onTap: () {
-
+          // Add navigation logic here if needed
         },
       ),
     );

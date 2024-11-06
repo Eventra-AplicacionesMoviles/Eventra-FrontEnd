@@ -1,8 +1,6 @@
 import 'category_event_response.dart';
 import 'organizer.dart';
-import 'event_request.dart';
-
-class EventResponse {
+class Event {
   final int id;
   final String title;
   final String description;
@@ -13,7 +11,7 @@ class EventResponse {
   final CategoryEventResponse categoryEvent;
   final String url;
 
-  EventResponse({
+  Event({
     required this.id,
     required this.title,
     required this.description,
@@ -25,8 +23,8 @@ class EventResponse {
     required this.url,
   });
 
-  factory EventResponse.fromJson(Map<String, dynamic> json) {
-    return EventResponse(
+  factory Event.fromJson(Map<String, dynamic> json) {
+    return Event(
       id: json['id'],
       title: json['title'],
       description: json['description'],
@@ -36,20 +34,6 @@ class EventResponse {
       organizer: Organizer.fromJson(json['organizer']),
       categoryEvent: CategoryEventResponse.fromJson(json['categoryEvent']),
       url: json['url'],
-    );
-  }
-
-  factory EventResponse.fromRequest(EventRequest request, int id) {
-    return EventResponse(
-      id: id,
-      title: request.title,
-      description: request.description,
-      startDate: DateTime.parse(request.startDate),
-      endDate: DateTime.parse(request.endDate),
-      location: request.location,
-      organizer: Organizer(id: request.organizerId, firstName: '', lastName: ''), // Placeholder values
-      categoryEvent: CategoryEventResponse(id: request.categoryId, name: ''), // Placeholder values
-      url: request.url,
     );
   }
 }

@@ -1,37 +1,180 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../widgets/custom_bottom_navigation_bar.dart';
+import '../services/api_service.dart';
+import '../models/event_response.dart';
+import '../models/event_request.dart';
 
 class MyEventsPage extends StatefulWidget {
-  const MyEventsPage({super.key});
+  final bool isAdmin;
+  final int userId; // Add userId parameter
+
+  const MyEventsPage({super.key, required this.isAdmin, required this.userId});
 
   @override
   _MyEventsPageState createState() => _MyEventsPageState();
 }
 
 class _MyEventsPageState extends State<MyEventsPage> {
-  // Lista estática de eventos con imágenes
-  final List<Map<String, dynamic>> _events = [
-    {
-      'title': 'Marron 5',
-      'description': 'Concierto imperdible a todo dar',
-      'location': 'Miraflores, Peru',
-      'startDate': DateTime.now().add(Duration(days: 1)),
-      'endDate': DateTime.now().add(Duration(days: 1, hours: 2)),
-      'organizer': {'firstName': 'John', 'lastName': 'Doe'},
-      'categoryEvent': {'name': 'Música'},
-      'imageUrl': 'assets/jazz_festival.png', // Ruta de la imagen en assets
-    },
-    {
-      'title': 'Halloween Party',
-      'description': 'La mejor fiesta de halloween, no te la puedes perder',
-      'location': 'La Molina, Peru',
-      'startDate': DateTime.now().add(Duration(days: 2)),
-      'endDate': DateTime.now().add(Duration(days: 2, hours: 3)),
-      'organizer': {'firstName': 'Jane', 'lastName': 'Doe'},
-      'categoryEvent': {'name': 'Fiesta'},
-      'imageUrl': 'assets/party.png', // Ruta de la imagen en assets
-    },
-  ];
+  List<EventResponse> _events = [];
+  int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEvents();
+  }
+
+  void _fetchEvents() async {
+    try {
+      List<EventResponse> events = await ApiService().fetchEventsByUserId(widget.userId);
+      setState(() {
+        _events = events;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load events')),
+      );
+    }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    // Handle navigation based on the selected index
+    // Add your navigation logic here
+  }
+
+  void _deleteEvent(int eventId) async {
+    bool confirm = await _showDeleteConfirmationDialog();
+    if (confirm) {
+      try {
+        await ApiService().deleteEvent(eventId);
+        setState(() {
+          _events.removeWhere((event) => event.id == eventId);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Event deleted successfully')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete event')),
+        );
+      }
+    }
+  }
+
+  Future<bool> _showDeleteConfirmationDialog() async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Confirm Deletion'),
+        content: Text('Are you sure you want to delete this event?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Delete'),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
+  void _editEvent(EventResponse event) async {
+    EventRequest? updatedEvent = await _showEditEventDialog(event);
+    if (updatedEvent != null) {
+      try {
+        await ApiService().updateEvent(event.id, updatedEvent);
+        setState(() {
+          int index = _events.indexWhere((e) => e.id == event.id);
+          _events[index] = EventResponse.fromRequest(updatedEvent, event.id);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Event updated successfully')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update event')),
+        );
+      }
+    }
+  }
+
+  Future<EventRequest?> _showEditEventDialog(EventResponse event) async {
+    final _formKey = GlobalKey<FormState>();
+    final _titleController = TextEditingController(text: event.title);
+    final _descriptionController = TextEditingController(text: event.description);
+    final _locationController = TextEditingController(text: event.location);
+    final _urlController = TextEditingController(text: event.url);
+    DateTime? _startDate = event.startDate;
+    DateTime? _endDate = event.endDate;
+
+    return await showDialog<EventRequest>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Edit Event'),
+        content: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _titleController,
+                  decoration: InputDecoration(labelText: 'Title'),
+                  validator: (value) => value!.isEmpty ? 'Please enter a title' : null,
+                ),
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: InputDecoration(labelText: 'Description'),
+                  validator: (value) => value!.isEmpty ? 'Please enter a description' : null,
+                ),
+                TextFormField(
+                  controller: _locationController,
+                  decoration: InputDecoration(labelText: 'Location'),
+                  validator: (value) => value!.isEmpty ? 'Please enter a location' : null,
+                ),
+                TextFormField(
+                  controller: _urlController,
+                  decoration: InputDecoration(labelText: 'URL'),
+                  validator: (value) => value!.isEmpty ? 'Please enter a URL' : null,
+                ),
+                // Add date and time pickers for start and end dates
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                Navigator.of(context).pop(EventRequest(
+                  title: _titleController.text,
+                  description: _descriptionController.text,
+                  startDate: DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(_startDate!),
+                  endDate: DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(_endDate!),
+                  location: _locationController.text,
+                  organizerId: event.organizer.id,
+                  categoryId: event.categoryEvent.id,
+                  url: _urlController.text,
+                ));
+              }
+            },
+            child: Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,12 +183,13 @@ class _MyEventsPageState extends State<MyEventsPage> {
         title: const Text('Mis Eventos'),
         backgroundColor: const Color(0xFFFFA726),
         elevation: 4,
+        automaticallyImplyLeading: false, // Remove the back arrow
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16.0),
         itemCount: _events.length,
         itemBuilder: (context, index) {
-          final event = _events[index]; // Usar la lista estática
+          final event = _events[index];
           return Card(
             elevation: 8,
             shape: RoundedRectangleBorder(
@@ -57,12 +201,27 @@ class _MyEventsPageState extends State<MyEventsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Mostrar imagen del evento desde assets
-                  Image.asset(
-                    event['imageUrl'], // Cargar la imagen desde assets
-                    height: 200, // Ajusta la altura según sea necesario
-                    width: double.infinity,
-                    fit: BoxFit.cover, // Ajusta la imagen al espacio disponible
+                  Stack(
+                    children: [
+                      Image.network(
+                        event.url,
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                      Positioned(
+                        bottom: 10,
+                        right: 10,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          color: Colors.black54,
+                          child: Text(
+                            'Categoría: ${event.categoryEvent.name}',
+                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -70,7 +229,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          event['title'],
+                          event.title,
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -79,37 +238,46 @@ class _MyEventsPageState extends State<MyEventsPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Descripción: ${event['description']}',
-                          style: const TextStyle(fontSize: 16, color: Colors.black54),
+                          'Descripción: ${event.description}',
+                          style: const TextStyle(fontSize: 16, color: Colors.black87),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Ubicación: ${event['location']}',
-                          style: const TextStyle(fontSize: 16, color: Colors.black54),
+                          'Ubicación: ${event.location}',
+                          style: const TextStyle(fontSize: 16, color: Colors.black87),
                         ),
                         const SizedBox(height: 8),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Inicio: ${DateFormat('yyyy-MM-dd – kk:mm').format(event['startDate'])}',
-                              style: const TextStyle(fontSize: 14, color: Colors.black54),
+                              'Inicio: ${DateFormat('yyyy-MM-dd – kk:mm').format(event.startDate)}',
+                              style: const TextStyle(fontSize: 14, color: Colors.black87),
                             ),
                             Text(
-                              'Fin: ${DateFormat('yyyy-MM-dd – kk:mm').format(event['endDate'])}',
-                              style: const TextStyle(fontSize: 14, color: Colors.black54),
+                              'Fin: ${DateFormat('yyyy-MM-dd – kk:mm').format(event.endDate)}',
+                              style: const TextStyle(fontSize: 14, color: Colors.black87),
                             ),
                           ],
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Organizador: ${event['organizer']['firstName']} ${event['organizer']['lastName']}',
-                          style: const TextStyle(fontSize: 16, color: Colors.black54),
+                          'Organizador: ${event.organizer.firstName} ${event.organizer.lastName}',
+                          style: const TextStyle(fontSize: 16, color: Colors.black87),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Categoría: ${event['categoryEvent']['name']}',
-                          style: const TextStyle(fontSize: 16, color: Colors.black54),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () => _editEvent(event),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _deleteEvent(event.id),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -119,6 +287,12 @@ class _MyEventsPageState extends State<MyEventsPage> {
             ),
           );
         },
+      ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        isAdmin: widget.isAdmin,
+        userId: widget.userId, // Pass the userId parameter here
       ),
     );
   }

@@ -1,4 +1,3 @@
-
 class EventRequest {
   final String title;
   final String description;

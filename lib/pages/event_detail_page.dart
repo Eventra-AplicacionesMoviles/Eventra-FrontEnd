@@ -5,8 +5,16 @@ import 'event_inscription.dart';
 class EventDetailPage extends StatefulWidget {
   final String imagePath;
   final String title;
+  final bool isAdmin;
+  final int userId; // Add userId parameter
 
-  const EventDetailPage({super.key, required this.imagePath, required this.title});
+  const EventDetailPage({
+    super.key,
+    required this.imagePath,
+    required this.title,
+    required this.isAdmin,
+    required this.userId, // Add this parameter to the constructor
+  });
 
   @override
   _EventDetailPageState createState() => _EventDetailPageState();
@@ -195,6 +203,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        isAdmin: widget.isAdmin, // Pass the isAdmin parameter here
+        userId: widget.userId, // Pass the userId parameter here
       ),
     );
   }

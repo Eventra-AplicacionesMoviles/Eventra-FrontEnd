@@ -3,16 +3,19 @@ import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
 
 class ReservationPage extends StatefulWidget {
-  const ReservationPage({super.key});
+  final bool isAdmin;
+  final int userId; // Add userId parameter
+
+  const ReservationPage({super.key, required this.isAdmin, required this.userId});
 
   @override
   _ReservationPageState createState() => _ReservationPageState();
 }
 
 class _ReservationPageState extends State<ReservationPage> {
-  int _selectedIndex = 4; // Asegúrate de que el índice corresponde a la pestaña actual
+  int _selectedIndex = 4; // Ensure the index corresponds to the current tab
 
-  // Lista de reservaciones
+  // List of reservations
   List<Map<String, String>> reservations = [
     {
       'title': 'Concierto',
@@ -34,14 +37,14 @@ class _ReservationPageState extends State<ReservationPage> {
     });
   }
 
-  // Método para eliminar una reservación
+  // Method to delete a reservation
   void _deleteReservation(int index) {
     setState(() {
       reservations.removeAt(index);
     });
   }
 
-  // Método para mostrar diálogo de confirmación
+  // Method to show confirmation dialog
   void _showDeleteConfirmationDialog(int index) {
     showDialog(
       context: context,
@@ -72,7 +75,7 @@ class _ReservationPageState extends State<ReservationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Mis Reservaciones'),
+      appBar: CustomAppBar(title: 'Mis Reservaciones', isAdmin: widget.isAdmin, userId: widget.userId), // Pass the userId parameter here
       backgroundColor: const Color(0xFFF5F5F5),
       body: ListView.builder(
         padding: const EdgeInsets.all(16.0),
@@ -91,6 +94,8 @@ class _ReservationPageState extends State<ReservationPage> {
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        isAdmin: widget.isAdmin, // Pass the isAdmin parameter here
+        userId: widget.userId, // Pass the userId parameter here
       ),
     );
   }
@@ -157,7 +162,7 @@ class _ReservationPageState extends State<ReservationPage> {
             PopupMenuButton<String>(
               onSelected: (value) {
                 if (value == 'Cancelar') {
-                  _showDeleteConfirmationDialog(index); // Muestra diálogo de confirmación
+                  _showDeleteConfirmationDialog(index); // Show confirmation dialog
                 }
               },
               itemBuilder: (BuildContext context) {

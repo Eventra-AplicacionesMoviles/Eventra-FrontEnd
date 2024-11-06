@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
-// import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'home_page.dart';
+import 'my_events_page.dart';
 import 'sign_up.dart';
 
 class LoginPage extends StatefulWidget {
@@ -16,49 +17,61 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // Future<void> _login() async {
-  //   final response = await http.post(
-  //     Uri.parse('http://10.0.2.2:8080/api/auth/login'), // Actualiza con la IP y puerto correctos
-  //     headers: <String, String>{
-  //       'Content-Type': 'application/json; charset=UTF-8',
-  //     },
-  //     body: jsonEncode(<String, String>{
-  //       'email': _emailController.text,
-  //       'password': _passwordController.text,
-  //     }),
-  //   );
+  Future<void> _login() async {
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2:8080/api/auth/login'), // Update with the correct IP and port
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': _emailController.text,
+        'password': _passwordController.text,
+      }),
+    );
 
-  //   if (response.statusCode == 200) {
-  //     // Redirección si el login es exitoso
-  //     Navigator.pushReplacement(
-  //       context,
-  //       MaterialPageRoute(builder: (context) => const HomePage()),
-  //     );
-  //   } else {
-  //     // Manejo del error en el login
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Login failed')),
-  //     );
-  //   }
-  // }
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      print(responseData); // Log the response data
 
-  // Función de login estática sin backend
-  void _login() {
-    // Ejemplo de credenciales estáticas para la prueba de login
-    const String staticEmail = 'admin';
-    const String staticPassword = '123';
+      if (responseData != null && responseData['token'] != null) {
+        final token = responseData['token'];
 
-    if (_emailController.text == staticEmail &&
-        _passwordController.text == staticPassword) {
-      // Simulación de login exitoso
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
+        final userResponse = await http.get(
+          Uri.parse('http://10.0.2.2:8080/api/users/email/${_emailController.text}'),
+          headers: <String, String>{
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (userResponse.statusCode == 200) {
+          final userData = jsonDecode(userResponse.body);
+          final typeId = userData['typeOfUser']['typeId'];
+          final userId = userData['userId'];
+
+          if (typeId == 1) { // Assuming 1 is for User
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MyEventsPage(isAdmin: false, userId: userId)),
+            );
+          } else if (typeId == 2) { // Assuming 2 is for Admin
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomePage(isAdmin: true, userId: userId)),
+            );
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to fetch user details')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid response from server')),
+        );
+      }
     } else {
-      // Mensaje si el login falla
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid email or password')),
+        const SnackBar(content: Text('Login failed')),
       );
     }
   }

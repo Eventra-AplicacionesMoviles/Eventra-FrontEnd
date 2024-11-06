@@ -3,7 +3,10 @@ import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
 
 class EditProfilePage extends StatefulWidget {
-  const EditProfilePage({super.key});
+  final bool isAdmin;
+  final int userId; // Add userId parameter
+
+  const EditProfilePage({super.key, required this.isAdmin, required this.userId});
 
   @override
   _EditProfilePageState createState() => _EditProfilePageState();
@@ -47,6 +50,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Editar Perfil',
+        isAdmin: widget.isAdmin, // Pass the isAdmin parameter here
+        userId: widget.userId, // Pass the userId parameter here
         actions: [
           IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -120,6 +125,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        isAdmin: widget.isAdmin, // Pass the isAdmin parameter here
+        userId: widget.userId, // Pass the userId parameter here
       ),
     );
   }

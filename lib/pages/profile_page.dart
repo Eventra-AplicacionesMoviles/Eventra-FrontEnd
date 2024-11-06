@@ -1,10 +1,12 @@
-// profile_page.dart
 import 'package:flutter/material.dart';
 import 'edit_profile_page.dart';
 import 'my_events_page.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+  final bool isAdmin;
+  final int userId; // Add userId parameter
+
+  const ProfilePage({super.key, required this.isAdmin, required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +75,7 @@ class ProfilePage extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const EditProfilePage()),
+                      MaterialPageRoute(builder: (context) => EditProfilePage(isAdmin: isAdmin, userId: userId)),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -99,7 +101,7 @@ class ProfilePage extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const MyEventsPage()),
+                      MaterialPageRoute(builder: (context) => MyEventsPage(isAdmin: isAdmin, userId: userId)),
                     );
                   },
                   style: ElevatedButton.styleFrom(

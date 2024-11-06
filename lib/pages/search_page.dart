@@ -2,9 +2,15 @@ import 'package:flutter/material.dart';
 import 'filter_page.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
 import '../widgets/custom_app_bar.dart';
+import '../services/api_service.dart';
+import '../models/event_response.dart';
+import 'dart:async';
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key});
+  final bool isAdmin;
+  final int userId;
+
+  const SearchPage({super.key, required this.isAdmin, required this.userId});
 
   @override
   _SearchPageState createState() => _SearchPageState();
@@ -12,20 +18,43 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   int _selectedIndex = 1;
+  TextEditingController _searchController = TextEditingController();
+  final StreamController<List<EventResponse>> _eventsStreamController = StreamController.broadcast();
 
-  final List<Widget> _pages = [
-    Center(child: Text('Inicio')),
-    Center(child: Text('Página de Búsqueda')),
-    Center(child: Text('Reservas')),
-    Center(child: Text('Entradas')),
-    Center(child: Text('Perfil')),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchEvents();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    _eventsStreamController.close();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    _fetchEvents(_searchController.text);
+  }
+
+  Future<void> _fetchEvents([String query = '']) async {
+    try {
+      List<EventResponse> events = query.isEmpty
+          ? await ApiService().fetchEvents()
+          : await ApiService().searchEvents(query);
+      _eventsStreamController.add(events);
+    } catch (e) {
+      _eventsStreamController.addError('Failed to load events');
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
-
   }
 
   @override
@@ -33,6 +62,8 @@ class _SearchPageState extends State<SearchPage> {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Buscar',
+        isAdmin: widget.isAdmin,
+        userId: widget.userId,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -43,6 +74,7 @@ class _SearchPageState extends State<SearchPage> {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: _searchController,
                     decoration: InputDecoration(
                       labelText: 'Buscar',
                       prefixIcon: Icon(Icons.search),
@@ -90,14 +122,30 @@ class _SearchPageState extends State<SearchPage> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFFFA726)),
             ),
             const SizedBox(height: 10),
-            eventCard('Concierto', '10 Noviembre', '6:00 pm', 'assets/concert.png'),
-            eventCard('Obra de teatro', '15 Octubre', '4:00 pm', 'assets/theater.png'),
+            StreamBuilder<List<EventResponse>>(
+              stream: _eventsStreamController.stream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasData) {
+                  return Column(
+                    children: snapshot.data!.map((event) => eventCard(event)).toList(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  return Text('No events found');
+                }
+              },
+            ),
           ],
         ),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        isAdmin: widget.isAdmin,
+        userId: widget.userId,
       ),
     );
   }
@@ -114,7 +162,7 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget eventCard(String title, String date, String time, String imagePath) {
+  Widget eventCard(EventResponse event) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -122,10 +170,10 @@ class _SearchPageState extends State<SearchPage> {
       child: ListTile(
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: Image.asset(imagePath, width: 80, fit: BoxFit.cover),
+          child: Image.network(event.url, width: 80, fit: BoxFit.cover),
         ),
         title: Text(
-          title,
+          event.title,
           style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
         ),
         subtitle: Column(
@@ -135,14 +183,14 @@ class _SearchPageState extends State<SearchPage> {
               children: [
                 const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
                 const SizedBox(width: 5),
-                Text(date, style: const TextStyle(color: Colors.grey)),
+                Text(event.startDate.toString(), style: const TextStyle(color: Colors.grey)),
               ],
             ),
             Row(
               children: [
                 const Icon(Icons.access_time, size: 16, color: Colors.grey),
                 const SizedBox(width: 5),
-                Text(time, style: const TextStyle(color: Colors.grey)),
+                Text(event.endDate.toString(), style: const TextStyle(color: Colors.grey)),
               ],
             ),
           ],

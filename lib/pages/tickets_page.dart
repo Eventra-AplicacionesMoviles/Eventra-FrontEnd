@@ -4,7 +4,10 @@ import '../widgets/custom_app_bar.dart';
 import 'tickets_detail_page.dart';
 
 class TicketsPage extends StatefulWidget {
-  const TicketsPage({super.key});
+  final bool isAdmin;
+  final int userId; // Add userId parameter
+
+  const TicketsPage({super.key, required this.isAdmin, required this.userId});
 
   @override
   _TicketsPageState createState() => _TicketsPageState();
@@ -26,6 +29,8 @@ class _TicketsPageState extends State<TicketsPage> {
       child: Scaffold(
         appBar: CustomAppBar(
           title: 'Eventra',
+          isAdmin: widget.isAdmin, // Pass the isAdmin parameter here
+          userId: widget.userId, // Pass the userId parameter here
           bottom: const TabBar(
             labelColor: Colors.white,
             unselectedLabelColor: Colors.grey,
@@ -117,6 +122,8 @@ class _TicketsPageState extends State<TicketsPage> {
         bottomNavigationBar: CustomBottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
+          isAdmin: widget.isAdmin, // Pass the isAdmin parameter here
+          userId: widget.userId, // Pass the userId parameter here
         ),
       ),
     );

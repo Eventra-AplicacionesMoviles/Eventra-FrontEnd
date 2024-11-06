@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../main.dart';
 import 'login.dart';
 
@@ -11,40 +13,42 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _dobController = TextEditingController();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _urlController = TextEditingController();
 
-  String _selectedGender = 'Male';
-  String _selectedCountry = 'Bangladesh';
+  List<Map<String, dynamic>> _userTypes = [];
+  int _selectedTypeId = 1;
 
   @override
-  void dispose() {
-    _dobController.dispose();
-    _nameController.dispose();
-    _phoneController.dispose();
-    _emailController.dispose();
-    _addressController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _fetchUserTypes();
   }
 
-  // Método comentado para simulación sin backend
-  /* Future<void> _register() async {
+  Future<void> _fetchUserTypes() async {
+    final response = await http.get(Uri.parse('http://10.0.2.2:8080/api/typeofuser'));
+    if (response.statusCode == 200) {
+      setState(() {
+        _userTypes = List<Map<String, dynamic>>.from(json.decode(response.body));
+      });
+    }
+  }
+
+  Future<void> _register() async {
     final url = Uri.parse('http://10.0.2.2:8080/api/auth/register');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'firstName': _nameController.text.split(' ')[0],
-        'lastName': _nameController.text.split(' ').length > 1 ? _nameController.text.split(' ').sublist(1).join(' ') : '',
+        'firstName': _firstNameController.text,
+        'lastName': _lastNameController.text,
         'email': _emailController.text,
         'password': _passwordController.text,
-        'typeId': 1,
-        'url': _addressController.text,
+        'typeId': _selectedTypeId,
+        'url': _urlController.text,
       }),
     );
 
@@ -63,19 +67,6 @@ class _SignUpPageState extends State<SignUpPage> {
         const SnackBar(content: Text('Registration Failed')),
       );
     }
-  } */
-
-  // Método de registro simulado
-  void _simulateRegister() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Registered Successfully (Simulated)')),
-    );
-    Future.delayed(const Duration(seconds: 1), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      );
-    });
   }
 
   @override
@@ -108,70 +99,44 @@ class _SignUpPageState extends State<SignUpPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Código del formulario (sin cambios)
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'Name*',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+              const SizedBox(height: 10),
+              Center(
+                child: Wrap(
+                  spacing: 10.0,
+                  children: _userTypes.map((type) {
+                    return ChoiceChip(
+                      label: Text(type['description']),
+                      selected: _selectedTypeId == type['typeId'],
+                      onSelected: (selected) {
+                        setState(() {
+                          _selectedTypeId = type['typeId'];
+                        });
+                      },
+                      selectedColor: Colors.orangeAccent,
+                      backgroundColor: Colors.grey[200],
+                      labelStyle: TextStyle(
+                        color: _selectedTypeId == type['typeId'] ? Colors.white : Colors.black,
+                      ),
+                    );
+                  }).toList(),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password*',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  return null;
-                },
-              ),
+              _buildTextField(_firstNameController, 'First Name*'),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email*',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  return null;
-                },
-              ),
+              _buildTextField(_lastNameController, 'Last Name*'),
               const SizedBox(height: 16),
-              // Más campos del formulario...
+              _buildTextField(_emailController, 'Email*', keyboardType: TextInputType.emailAddress),
+              const SizedBox(height: 16),
+              _buildTextField(_passwordController, 'Password*', obscureText: true),
+              const SizedBox(height: 16),
+              _buildTextField(_urlController, 'Photo URL*'),
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      _simulateRegister(); // Llamada al método simulado
+                      _register(); // Llamada al método de registro
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -191,6 +156,28 @@ class _SignUpPageState extends State<SignUpPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String labelText, {bool obscureText = false, TextInputType keyboardType = TextInputType.text}) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your $labelText';
+        }
+        return null;
+      },
     );
   }
 }

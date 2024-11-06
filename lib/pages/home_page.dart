@@ -8,7 +8,10 @@ import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final bool isAdmin;
+  final int userId;
+
+  const HomePage({super.key, required this.isAdmin, required this.userId});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -25,23 +28,22 @@ class _HomePageState extends State<HomePage> {
     if (index == 1) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const SearchPage()),
+        MaterialPageRoute(builder: (context) => SearchPage(isAdmin: widget.isAdmin, userId: widget.userId)),
       );
     } else if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const AddEventPage()),
+        MaterialPageRoute(builder: (context) => AddEventPage(isAdmin: widget.isAdmin, userId: widget.userId)),
       );
-    }
-    else if (index == 3) {
+    } else if (index == 3) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const ReservationPage()),
+        MaterialPageRoute(builder: (context) => ReservationPage(isAdmin: widget.isAdmin, userId: widget.userId)),
       );
     } else if (index == 4) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const TicketsPage()),
+        MaterialPageRoute(builder: (context) => TicketsPage(isAdmin: widget.isAdmin, userId: widget.userId)),
       );
     } else if (index == 5) {
       _showBottomSheet();
@@ -74,30 +76,22 @@ class _HomePageState extends State<HomePage> {
               ListTile(
                 leading: const Icon(Icons.account_circle, color: Colors.black87),
                 title: const Text('Cambiar cuenta'),
-                onTap: () {
-
-                },
+                onTap: () {},
               ),
               ListTile(
                 leading: const Icon(Icons.help, color: Colors.black87),
                 title: const Text('Ayuda'),
-                onTap: () {
-
-                },
+                onTap: () {},
               ),
               ListTile(
                 leading: const Icon(Icons.description, color: Colors.black87),
                 title: const Text('Términos y condiciones'),
-                onTap: () {
-
-                },
+                onTap: () {},
               ),
               ListTile(
                 leading: const Icon(Icons.exit_to_app, color: Colors.red),
                 title: const Text('Cerrar sesión'),
-                onTap: () {
-
-                },
+                onTap: () {},
               ),
             ],
           ),
@@ -111,6 +105,8 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Eventra',
+        isAdmin: widget.isAdmin,
+        userId: widget.userId, // Pass the userId parameter here
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -155,6 +151,8 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        isAdmin: widget.isAdmin,
+        userId: widget.userId,
       ),
     );
   }
@@ -188,7 +186,7 @@ class _HomePageState extends State<HomePage> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => EventDetailPage(imagePath: imagePath, title: title)),
+                          MaterialPageRoute(builder: (context) => EventDetailPage(imagePath: imagePath, title: title, isAdmin: widget.isAdmin, userId: widget.userId)),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -244,7 +242,7 @@ class _HomePageState extends State<HomePage> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => EventDetailPage(imagePath: imagePath, title: title)),
+              MaterialPageRoute(builder: (context) => EventDetailPage(imagePath: imagePath, title: title, isAdmin: widget.isAdmin, userId: widget.userId)),
             );
           },
           style: ElevatedButton.styleFrom(

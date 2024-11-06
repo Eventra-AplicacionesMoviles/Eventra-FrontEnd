@@ -6,75 +6,118 @@ import '../pages/tickets_page.dart';
 import '../pages/profile_page.dart';
 import '../pages/home_page.dart';
 import '../pages/login.dart';
+import '../pages/my_events_page.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
+  final bool isAdmin;
+  final int userId; // Add userId parameter
 
   const CustomBottomNavigationBar({
     Key? key,
     required this.currentIndex,
     required this.onTap,
+    required this.isAdmin,
+    required this.userId, // Add this parameter to the constructor
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final items = isAdmin ? _adminItems() : _userItems();
+    final validIndex = currentIndex >= 0 && currentIndex < items.length ? currentIndex : 0;
+
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-        BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
-        BottomNavigationBarItem(icon: Icon(Icons.add_box), label: ''),
-        BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: ''),
-        BottomNavigationBarItem(icon: Icon(Icons.assignment), label: ''),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
-      ],
+      items: items,
       selectedItemColor: const Color(0xFFFFA726),
       unselectedItemColor: Colors.grey,
-      currentIndex: currentIndex,
+      currentIndex: validIndex,
       onTap: (index) {
         if (index == 5) {
           _showBottomSheet(context);
         } else {
-          onTap(index);  // Invoca la función onTap con el índice seleccionado
+          onTap(index);
           _navigateToPage(context, index);
         }
       },
     );
   }
 
+  List<BottomNavigationBarItem> _adminItems() {
+    return const [
+      BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+      BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+      BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: ''),
+      BottomNavigationBarItem(icon: Icon(Icons.assignment), label: ''),
+      BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+      BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
+    ];
+  }
+
+  List<BottomNavigationBarItem> _userItems() {
+    return const [
+      BottomNavigationBarItem(icon: Icon(Icons.event), label: ''),
+      BottomNavigationBarItem(icon: Icon(Icons.add_box), label: ''),
+      BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
+    ];
+  }
+
   void _navigateToPage(BuildContext context, int index) {
-    switch (index) {
-      case 0:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
-        break;
-      case 1:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const SearchPage()),
-        );
-        break;
-      case 2:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const AddEventPage()),
-        );
-        break;
-      case 3:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const TicketsPage()),
-        );
-        break;
-      case 4:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const ReservationPage()),
-        );
-        break;
+    if (isAdmin) {
+      switch (index) {
+        case 0:
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage(isAdmin: isAdmin, userId: userId)),
+          );
+          break;
+        case 1:
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => SearchPage(isAdmin: isAdmin, userId: userId)),
+          );
+          break;
+        case 2:
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => TicketsPage(isAdmin: isAdmin, userId: userId)),
+          );
+          break;
+        case 3:
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => ReservationPage(isAdmin: isAdmin, userId: userId)),
+          );
+          break;
+        case 4:
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => ProfilePage(isAdmin: isAdmin, userId: userId)),
+          );
+          break;
+        case 5:
+          _showBottomSheet(context);
+          break;
+      }
+    } else {
+      switch (index) {
+        case 0:
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => MyEventsPage(isAdmin: isAdmin, userId: userId)),
+          );
+          break;
+        case 1:
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => AddEventPage(isAdmin: isAdmin, userId: userId)),
+          );
+          break;
+        case 2:
+          _showBottomSheet(context);
+          break;
+      }
     }
   }
 
@@ -103,28 +146,28 @@ class CustomBottomNavigationBar extends StatelessWidget {
             children: [
               ListTile(
                 leading: const Icon(Icons.account_circle, color: Colors.black87),
-                title: const Text('Cambiar cuenta'),
+                title: const Text('Change Account'),
                 onTap: () {
-                  // Implementa la lógica para cambiar la cuenta
+                  // Implement account change logic
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.help, color: Colors.black87),
-                title: const Text('Ayuda'),
+                title: const Text('Help'),
                 onTap: () {
-                  // Implementa la lógica para la ayuda
+                  // Implement help logic
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.description, color: Colors.black87),
-                title: const Text('Términos y condiciones'),
+                title: const Text('Terms and Conditions'),
                 onTap: () {
-                  // Implementa la lógica para los términos y condiciones
+                  // Implement terms and conditions logic
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.exit_to_app, color: Colors.red),
-                title: const Text('Cerrar sesión'),
+                title: const Text('Logout'),
                 onTap: () {
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (context) => const LoginPage()),

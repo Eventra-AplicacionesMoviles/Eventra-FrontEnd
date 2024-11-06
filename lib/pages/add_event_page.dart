@@ -12,7 +12,10 @@ import '../models/event_request.dart';
 import '../models/category_event_response.dart';
 
 class AddEventPage extends StatefulWidget {
-  const AddEventPage({super.key});
+  final bool isAdmin;
+  final int userId; // Add userId parameter
+
+  const AddEventPage({super.key, required this.isAdmin, required this.userId});
 
   @override
   _AddEventPageState createState() => _AddEventPageState();
@@ -39,9 +42,9 @@ class _AddEventPageState extends State<AddEventPage> {
 
   void _fetchCategories() async {
     try {
-      List<CategoryEventResponse> categories = await ApiService().fetchCategories();
+      List<dynamic> categories = await ApiService().fetchCategories();
       setState(() {
-        _categories = categories;
+        _categories = categories.cast<CategoryEventResponse>();
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -58,22 +61,22 @@ class _AddEventPageState extends State<AddEventPage> {
     if (index == 1) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const SearchPage()),
+        MaterialPageRoute(builder: (context) => SearchPage(isAdmin: widget.isAdmin, userId: widget.userId)),
       );
     } else if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const AddEventPage()),
+        MaterialPageRoute(builder: (context) => AddEventPage(isAdmin: widget.isAdmin, userId: widget.userId)),
       );
     } else if (index == 3) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const ReservationPage()),
+        MaterialPageRoute(builder: (context) => ReservationPage(isAdmin: widget.isAdmin, userId: widget.userId)),
       );
     } else if (index == 4) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const TicketsPage()),
+        MaterialPageRoute(builder: (context) => TicketsPage(isAdmin: widget.isAdmin, userId: widget.userId)),
       );
     } else if (index == 5) {
       _showBottomSheet();
@@ -194,7 +197,7 @@ class _AddEventPageState extends State<AddEventPage> {
     }
   }
 
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       if (_startDate == null || _endDate == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -206,22 +209,37 @@ class _AddEventPageState extends State<AddEventPage> {
       final eventRequest = EventRequest(
         title: _titleController.text,
         description: _descriptionController.text,
-        startDate: dateFormat.format(_startDate!),  // Now using the correct format
+        startDate: dateFormat.format(_startDate!),
         endDate: dateFormat.format(_endDate!),
         location: _locationController.text,
-        organizerId: 1, // Change to the real organizerId
+        organizerId: widget.userId, // Use the userId from the widget
         categoryId: _categories.firstWhere((category) => category.name == _selectedCategory).id,
         url: _urlController.text,
       );
 
-      ApiService().createEvent(eventRequest);
+      try {
+        await ApiService().createEvent(eventRequest);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Evento creado exitosamente')),
+        );
+        _formKey.currentState!.reset();
+        setState(() {
+          _startDate = null;
+          _endDate = null;
+          _selectedCategory = null;
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al crear el evento')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Eventra'),
+      appBar: CustomAppBar(title: 'Eventra', isAdmin: widget.isAdmin, userId: widget.userId),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -378,6 +396,8 @@ class _AddEventPageState extends State<AddEventPage> {
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        isAdmin: widget.isAdmin,
+        userId: widget.userId,
       ),
     );
   }
