@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'home_page.dart';
 import 'my_events_page.dart';
 import 'sign_up.dart';
@@ -16,10 +17,11 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final storage = FlutterSecureStorage();
 
   Future<void> _login() async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8080/api/auth/login'), // Update with the correct IP and port
+      Uri.parse('http://10.0.2.2:8080/api/auth/login'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -31,10 +33,11 @@ class _LoginPageState extends State<LoginPage> {
 
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
-      print(responseData); // Log the response data
+      print(responseData);
 
       if (responseData != null && responseData['token'] != null) {
         final token = responseData['token'];
+        await storage.write(key: 'jwt_token', value: token); // Store the token
 
         final userResponse = await http.get(
           Uri.parse('http://10.0.2.2:8080/api/users/email/${_emailController.text}'),
@@ -48,12 +51,12 @@ class _LoginPageState extends State<LoginPage> {
           final typeId = userData['typeOfUser']['typeId'];
           final userId = userData['userId'];
 
-          if (typeId == 1) { // Assuming 1 is for User
+          if (typeId == 1) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => MyEventsPage(isAdmin: false, userId: userId)),
             );
-          } else if (typeId == 2) { // Assuming 2 is for Admin
+          } else if (typeId == 2) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => HomePage(isAdmin: true, userId: userId)),
@@ -90,15 +93,33 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 const SizedBox(height: 40),
                 Center(
+                  child: Image.asset(
+                    'assets/logo.png',
+                    height: 100,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Center(
                   child: Text(
                     'Login',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueGrey[900],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _emailController,
-                  decoration: const InputDecoration(labelText: 'Email'),
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
@@ -109,7 +130,14 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
-                  decoration: const InputDecoration(labelText: 'Password'),
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                  ),
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -126,7 +154,17 @@ class _LoginPageState extends State<LoginPage> {
                         _login();
                       }
                     },
-                    child: const Text('Login'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      backgroundColor: Color(0xFFFFA726),
+                    ),
+                    child: const Text(
+                      'Login',
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),

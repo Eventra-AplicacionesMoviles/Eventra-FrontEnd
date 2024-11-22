@@ -1,11 +1,15 @@
-import 'package:eventra_app/pages/add_event_page.dart';
 import 'package:flutter/material.dart';
-import 'event_detail_page.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'event_detail_page.dart'; // Ensure this import is present
 import 'tickets_page.dart';
 import 'search_page.dart';
 import 'reservation_page.dart';
+import 'add_event_page.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
+import '../services/api_service.dart';
+import '../models/event_response.dart';
+import '../models/user_response.dart';
 
 class HomePage extends StatefulWidget {
   final bool isAdmin;
@@ -19,6 +23,32 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  Future<List<EventResponse>>? _upcomingEvents;
+  Future<List<EventResponse>>? _distantEvents;
+  Future<UserResponse?>? _userDetails; // Changed to nullable
+  final storage = FlutterSecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    String? token = await storage.read(key: 'jwt_token');
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: No token found')),
+      );
+      return;
+    }
+
+    setState(() {
+      _upcomingEvents = ApiService().fetchUpcomingEvents(token);
+      _distantEvents = ApiService().fetchDistantEvents(token);
+      _userDetails = ApiService().fetchUserDetails(widget.userId, token);
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -106,16 +136,29 @@ class _HomePageState extends State<HomePage> {
       appBar: CustomAppBar(
         title: 'Eventra',
         isAdmin: widget.isAdmin,
-        userId: widget.userId, // Pass the userId parameter here
+        userId: widget.userId,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Hello, user!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFFFA726)),
+            FutureBuilder<UserResponse?>(
+              future: _userDetails,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return const Text('Error loading user details');
+                } else if (snapshot.hasData && snapshot.data != null) {
+                  return Text(
+                    'Hello, ${snapshot.data!.firstName}!',
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFFFA726)),
+                  );
+                } else {
+                  return const Text('Hello, user!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFFFA726)));
+                }
+              },
             ),
             const SizedBox(height: 10),
             const Text(
@@ -123,17 +166,24 @@ class _HomePageState extends State<HomePage> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFFFA726)),
             ),
             const SizedBox(height: 10),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildUpcomingEventCard(context, 'assets/concert.png', 'Concierto'),
-                  const SizedBox(width: 10),
-                  _buildUpcomingEventCard(context, 'assets/theater.png', 'Obra de teatro'),
-                  const SizedBox(width: 10),
-                  _buildUpcomingEventCard(context, 'assets/party.png', 'Party'),
-                ],
-              ),
+            FutureBuilder<List<EventResponse>>(
+              future: _upcomingEvents,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: snapshot.data!.map((event) => _buildUpcomingEventCard(context, event)).toList(),
+                    ),
+                  );
+                } else {
+                  return const Text('No upcoming events found');
+                }
+              },
             ),
             const SizedBox(height: 20),
             const Text(
@@ -141,10 +191,22 @@ class _HomePageState extends State<HomePage> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFFFA726)),
             ),
             const SizedBox(height: 10),
-            _buildPopularEventTile(context, 'Music Festival', '10 Noviembre', '6:00 pm', 'assets/music_festival.png'),
-            _buildPopularEventTile(context, 'Exposición', '15 Octubre', '4:00 pm', 'assets/exhibition.png'),
-            _buildPopularEventTile(context, 'Taller', '25 Setiembre', '3:00 pm', 'assets/workshop.png'),
-            _buildPopularEventTile(context, 'Partido', '9 Noviembre', '8:00 pm', 'assets/partido.png'),
+            FutureBuilder<List<EventResponse>>(
+              future: _distantEvents,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                  return Column(
+                    children: snapshot.data!.map((event) => _buildPopularEventTile(context, event)).toList(),
+                  );
+                } else {
+                  return const Text('No popular events found');
+                }
+              },
+            ),
           ],
         ),
       ),
@@ -157,7 +219,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildUpcomingEventCard(BuildContext context, String imagePath, String title) {
+  Widget _buildUpcomingEventCard(BuildContext context, EventResponse event) {
     return Card(
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -168,7 +230,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.asset(imagePath, fit: BoxFit.cover, height: 100, width: double.infinity),
+              child: Image.network(event.url, fit: BoxFit.cover, height: 100, width: double.infinity),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -176,18 +238,36 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Center(
                     child: Text(
-                      title,
+                      event.title,
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFFFFA726)),
                     ),
                   ),
                   const SizedBox(height: 5),
                   Center(
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => EventDetailPage(imagePath: imagePath, title: title, isAdmin: widget.isAdmin, userId: widget.userId)),
-                        );
+                      onPressed: () async {
+                        String? token = await storage.read(key: 'jwt_token');
+                        if (token != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => EventDetailPage(
+                              eventId: event.id,
+                              imagePath: event.url,
+                              title: event.title,
+                              date: event.startDate.toString(),
+                              time: event.endDate.toString(),
+                              location: event.location,
+                              organizer: '${event.organizer.firstName} ${event.organizer.lastName}',
+                              description: event.description,
+                              isAdmin: widget.isAdmin,
+                              userId: widget.userId,
+                            )),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Error: No token found')),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFFA726),
@@ -205,51 +285,75 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildPopularEventTile(BuildContext context, String title, String date, String time, String imagePath) {
+  Widget _buildPopularEventTile(BuildContext context, EventResponse event) {
     return Card(
-      color: const Color(0xFFFFA726),
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.symmetric(vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 4,
       child: ListTile(
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: Image.asset(imagePath, width: 80, fit: BoxFit.cover),
+          child: Image.network(event.url, width: 80, fit: BoxFit.cover),
         ),
         title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          event.title,
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.calendar_today, size: 16, color: Colors.white),
+                const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
                 const SizedBox(width: 5),
-                Text(date, style: const TextStyle(color: Colors.white70)),
+                Expanded(
+                  child: Text(event.startDate.toString(), style: const TextStyle(color: Colors.grey)),
+                ),
               ],
             ),
             Row(
               children: [
-                const Icon(Icons.access_time, size: 16, color: Colors.white),
+                const Icon(Icons.access_time, size: 16, color: Colors.grey),
                 const SizedBox(width: 5),
-                Text(time, style: const TextStyle(color: Colors.white70)),
+                Expanded(
+                  child: Text(event.endDate.toString(), style: const TextStyle(color: Colors.grey)),
+                ),
               ],
             ),
           ],
         ),
         trailing: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => EventDetailPage(imagePath: imagePath, title: title, isAdmin: widget.isAdmin, userId: widget.userId)),
-            );
+          onPressed: () async {
+            String? token = await storage.read(key: 'jwt_token');
+            if (token != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EventDetailPage(
+                    eventId: event.id,
+                    imagePath: event.url,
+                    title: event.title,
+                    date: event.startDate.toString(),
+                    time: event.endDate.toString(),
+                    location: event.location,
+                    organizer: '${event.organizer.firstName} ${event.organizer.lastName}',
+                    description: event.description,
+                    isAdmin: widget.isAdmin,
+                    userId: widget.userId,
+                  ),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Error: No token found')),
+              );
+            }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            backgroundColor: const Color(0xFFFFA726),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          child: const Text('Ver', style: TextStyle(color: Color(0xFFFFA726))),
+          child: const Text('Ver', style: TextStyle(color: Colors.white)),
         ),
       ),
     );

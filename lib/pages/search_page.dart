@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'filter_page.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
 import '../widgets/custom_app_bar.dart';
 import '../services/api_service.dart';
 import '../models/event_response.dart';
 import 'dart:async';
+import 'event_detail_page.dart';
 
 class SearchPage extends StatefulWidget {
   final bool isAdmin;
@@ -20,6 +22,7 @@ class _SearchPageState extends State<SearchPage> {
   int _selectedIndex = 1;
   TextEditingController _searchController = TextEditingController();
   final StreamController<List<EventResponse>> _eventsStreamController = StreamController.broadcast();
+  final storage = FlutterSecureStorage();
 
   @override
   void initState() {
@@ -42,9 +45,14 @@ class _SearchPageState extends State<SearchPage> {
 
   Future<void> _fetchEvents([String query = '']) async {
     try {
+      String? token = await storage.read(key: 'jwt_token');
+      if (token == null) {
+        _eventsStreamController.addError('Error: No token found');
+        return;
+      }
       List<EventResponse> events = query.isEmpty
-          ? await ApiService().fetchEvents()
-          : await ApiService().searchEvents(query);
+          ? await ApiService().fetchEvents(token)
+          : await ApiService().searchEvents(query, token);
       _eventsStreamController.add(events);
     } catch (e) {
       _eventsStreamController.addError('Failed to load events');
@@ -183,20 +191,49 @@ class _SearchPageState extends State<SearchPage> {
               children: [
                 const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
                 const SizedBox(width: 5),
-                Text(event.startDate.toString(), style: const TextStyle(color: Colors.grey)),
+                Expanded(
+                  child: Text(event.startDate.toString(), style: const TextStyle(color: Colors.grey)),
+                ),
               ],
             ),
             Row(
               children: [
                 const Icon(Icons.access_time, size: 16, color: Colors.grey),
                 const SizedBox(width: 5),
-                Text(event.endDate.toString(), style: const TextStyle(color: Colors.grey)),
+                Expanded(
+                  child: Text(event.endDate.toString(), style: const TextStyle(color: Colors.grey)),
+                ),
               ],
             ),
           ],
         ),
         trailing: ElevatedButton(
-          onPressed: () {},
+          onPressed: () async {
+            String? token = await storage.read(key: 'jwt_token');
+            if (token != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EventDetailPage(
+                    eventId: event.id,
+                    imagePath: event.url,
+                    title: event.title,
+                    date: event.startDate.toString(),
+                    time: event.endDate.toString(),
+                    location: event.location,
+                    organizer: '${event.organizer.firstName} ${event.organizer.lastName}',
+                    description: event.description,
+                    isAdmin: widget.isAdmin,
+                    userId: widget.userId,
+                  ),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Error: No token found')),
+              );
+            }
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFFFA726),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
 import '../services/api_service.dart';
@@ -7,7 +8,7 @@ import '../models/event_request.dart';
 
 class MyEventsPage extends StatefulWidget {
   final bool isAdmin;
-  final int userId; // Add userId parameter
+  final int userId;
 
   const MyEventsPage({super.key, required this.isAdmin, required this.userId});
 
@@ -18,6 +19,7 @@ class MyEventsPage extends StatefulWidget {
 class _MyEventsPageState extends State<MyEventsPage> {
   List<EventResponse> _events = [];
   int _selectedIndex = 0;
+  final storage = FlutterSecureStorage();
 
   @override
   void initState() {
@@ -25,15 +27,22 @@ class _MyEventsPageState extends State<MyEventsPage> {
     _fetchEvents();
   }
 
-  void _fetchEvents() async {
+  Future<void> _fetchEvents() async {
     try {
-      List<EventResponse> events = await ApiService().fetchEventsByUserId(widget.userId);
+      String? token = await storage.read(key: 'jwt_token');
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: No token found')),
+        );
+        return;
+      }
+      List<EventResponse> events = await ApiService().fetchEventsByUserId(widget.userId, token);
       setState(() {
         _events = events;
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load events')),
+        const SnackBar(content: Text('Failed to load events')),
       );
     }
   }
@@ -47,20 +56,27 @@ class _MyEventsPageState extends State<MyEventsPage> {
     // Add your navigation logic here
   }
 
-  void _deleteEvent(int eventId) async {
+  Future<void> _deleteEvent(int eventId) async {
     bool confirm = await _showDeleteConfirmationDialog();
     if (confirm) {
       try {
-        await ApiService().deleteEvent(eventId);
+        String? token = await storage.read(key: 'jwt_token');
+        if (token == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error: No token found')),
+          );
+          return;
+        }
+        await ApiService().deleteEvent(eventId, token);
         setState(() {
           _events.removeWhere((event) => event.id == eventId);
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Event deleted successfully')),
+          const SnackBar(content: Text('Event deleted successfully')),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete event')),
+          const SnackBar(content: Text('Failed to delete event')),
         );
       }
     }
@@ -70,16 +86,16 @@ class _MyEventsPageState extends State<MyEventsPage> {
     return await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Confirm Deletion'),
-        content: Text('Are you sure you want to delete this event?'),
+        title: const Text('Confirm Deletion'),
+        content: const Text('Are you sure you want to delete this event?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Delete'),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -90,17 +106,24 @@ class _MyEventsPageState extends State<MyEventsPage> {
     EventRequest? updatedEvent = await _showEditEventDialog(event);
     if (updatedEvent != null) {
       try {
-        await ApiService().updateEvent(event.id, updatedEvent);
+        String? token = await storage.read(key: 'jwt_token');
+        if (token == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error: No token found')),
+          );
+          return;
+        }
+        await ApiService().updateEvent(event.id, updatedEvent, token);
         setState(() {
           int index = _events.indexWhere((e) => e.id == event.id);
           _events[index] = EventResponse.fromRequest(updatedEvent, event.id);
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Event updated successfully')),
+          const SnackBar(content: Text('Event updated successfully')),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update event')),
+          const SnackBar(content: Text('Failed to update event')),
         );
       }
     }
@@ -118,7 +141,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
     return await showDialog<EventRequest>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Edit Event'),
+        title: const Text('Edit Event'),
         content: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -126,22 +149,22 @@ class _MyEventsPageState extends State<MyEventsPage> {
               children: [
                 TextFormField(
                   controller: _titleController,
-                  decoration: InputDecoration(labelText: 'Title'),
+                  decoration: const InputDecoration(labelText: 'Title'),
                   validator: (value) => value!.isEmpty ? 'Please enter a title' : null,
                 ),
                 TextFormField(
                   controller: _descriptionController,
-                  decoration: InputDecoration(labelText: 'Description'),
+                  decoration: const InputDecoration(labelText: 'Description'),
                   validator: (value) => value!.isEmpty ? 'Please enter a description' : null,
                 ),
                 TextFormField(
                   controller: _locationController,
-                  decoration: InputDecoration(labelText: 'Location'),
+                  decoration: const InputDecoration(labelText: 'Location'),
                   validator: (value) => value!.isEmpty ? 'Please enter a location' : null,
                 ),
                 TextFormField(
                   controller: _urlController,
-                  decoration: InputDecoration(labelText: 'URL'),
+                  decoration: const InputDecoration(labelText: 'URL'),
                   validator: (value) => value!.isEmpty ? 'Please enter a URL' : null,
                 ),
                 // Add date and time pickers for start and end dates
@@ -152,7 +175,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -169,7 +192,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
                 ));
               }
             },
-            child: Text('Save'),
+            child: const Text('Save'),
           ),
         ],
       ),
@@ -270,11 +293,11 @@ class _MyEventsPageState extends State<MyEventsPage> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             IconButton(
-                              icon: Icon(Icons.edit, color: Colors.blue),
+                              icon: const Icon(Icons.edit, color: Colors.blue),
                               onPressed: () => _editEvent(event),
                             ),
                             IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
+                              icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () => _deleteEvent(event.id),
                             ),
                           ],
@@ -292,7 +315,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         isAdmin: widget.isAdmin,
-        userId: widget.userId, // Pass the userId parameter here
+        userId: widget.userId,
       ),
     );
   }

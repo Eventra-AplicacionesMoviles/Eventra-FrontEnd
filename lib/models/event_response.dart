@@ -27,15 +27,15 @@ class EventResponse {
 
   factory EventResponse.fromJson(Map<String, dynamic> json) {
     return EventResponse(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
-      startDate: DateTime.parse(json['startDate']),
-      endDate: DateTime.parse(json['endDate']),
-      location: json['location'],
-      organizer: Organizer.fromJson(json['organizer']),
-      categoryEvent: CategoryEventResponse.fromJson(json['categoryEvent']),
-      url: json['url'],
+      id: json['id'] ?? 0, // Provide a default value of 0 if null
+      title: json['title'] ?? '', // Provide a default value of empty string if null
+      description: json['description'] ?? '', // Provide a default value of empty string if null
+      startDate: DateTime.parse(json['startDate'] ?? DateTime.now().toIso8601String()), // Provide current date if null
+      endDate: DateTime.parse(json['endDate'] ?? DateTime.now().toIso8601String()), // Provide current date if null
+      location: json['location'] ?? '', // Provide a default value of empty string if null
+      organizer: Organizer.fromJson(json['organizer'] ?? {}), // Provide an empty map if null
+      categoryEvent: CategoryEventResponse.fromJson(json['categoryEvent'] ?? {}), // Provide an empty map if null
+      url: json['url'] ?? '', // Provide a default value of empty string if null
     );
   }
 

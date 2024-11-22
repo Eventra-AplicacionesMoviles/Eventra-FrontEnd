@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'payment_page.dart';
 
 class EventRegistrationPage extends StatefulWidget {
   final String eventName;
+  final int userId;
+  final int eventId;
 
-  const EventRegistrationPage({super.key, required this.eventName});
+  const EventRegistrationPage({
+    super.key,
+    required this.eventName,
+    required this.userId,
+    required this.eventId,
+  });
 
   @override
   _EventRegistrationPageState createState() => _EventRegistrationPageState();
@@ -42,6 +51,55 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
     });
   }
 
+  Future<int?> _createTicket() async {
+    final ticketUrl = 'http://10.0.2.2:8080/api/tickets';
+    final ticketData = {
+      'eventID': widget.eventId,
+      'price': _ticketPrice,
+      'totalAvailable': _selectedTicketQuantity,
+      'category': _selectedTicketType,
+      'description': 'Ticket for ${widget.eventName}',
+    };
+
+    final response = await http.post(
+      Uri.parse(ticketUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(ticketData),
+    );
+
+    if (response.statusCode == 201) {
+      final responseData = jsonDecode(response.body);
+      return responseData['ticketID'];
+    } else {
+      print('Failed to create ticket: ${response.body}');
+      return null;
+    }
+  }
+
+  Future<int?> _createReservation(int ticketId) async {
+    final reservationUrl = 'http://10.0.2.2:8080/api/reservations';
+    final reservationData = {
+      'userId': widget.userId,
+      'ticketId': ticketId,
+      'quantity': _selectedTicketQuantity,
+      'reservationDate': DateTime.now().toIso8601String(),
+    };
+
+    final response = await http.post(
+      Uri.parse(reservationUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(reservationData),
+    );
+
+    if (response.statusCode == 201) {
+      final responseData = jsonDecode(response.body);
+      return responseData['reservationId'];
+    } else {
+      print('Failed to create reservation: ${response.body}');
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,7 +120,6 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-
               _buildDropdownField(
                 label: 'Tipo de entrada',
                 items: _ticketPrices.keys.map((type) => DropdownMenuItem<String>(
@@ -75,10 +132,7 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
                   _updateTotalCost();
                 },
               ),
-
               const SizedBox(height: 20),
-
-
               _buildDropdownField(
                 label: 'Cantidad de entradas',
                 items: [1, 2, 3, 4, 5].map((quantity) => DropdownMenuItem<int>(
@@ -91,10 +145,7 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
                   _updateTotalCost();
                 },
               ),
-
               const SizedBox(height: 20),
-
-
               _buildTextField(
                 label: 'Número de teléfono',
                 onChanged: (value) {
@@ -108,10 +159,7 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
                 },
                 keyboardType: TextInputType.phone,
               ),
-
               const SizedBox(height: 20),
-
-
               _buildTextField(
                 label: 'DNI',
                 onChanged: (value) {
@@ -125,10 +173,7 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
                 },
                 keyboardType: TextInputType.number,
               ),
-
               const SizedBox(height: 20),
-
-
               _buildDropdownField(
                 label: 'Servicios adicionales',
                 items: _additionalServicePrices.keys.map((service) => DropdownMenuItem<String>(
@@ -141,55 +186,65 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
                   _updateTotalCost();
                 },
               ),
-
               const SizedBox(height: 30),
-
-
               Text(
                 'Costo total: \$$_totalCost',
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
-
               const SizedBox(height: 30),
-
-
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Inscripción completada'),
-                            content: const Text('Te has inscrito en el evento. Para finalizar tu registro, realiza el pago.'),
-                            actions: <Widget>[
-                              TextButton(
-                                child: const Text('Pagar'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PaymentPage(
-                                        totalCost: _totalCost,
-                                        ticketType: _selectedTicketType!,
-                                        ticketQuantity: _selectedTicketQuantity!,
-                                        additionalService: _selectedAdditionalService ?? 'Ninguno',
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
+                      final ticketId = await _createTicket();
+                      if (ticketId != null) {
+                        final reservationId = await _createReservation(ticketId);
+                        if (reservationId != null) {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text('Inscripción completada'),
+                                content: const Text('Te has inscrito en el evento. Para finalizar tu registro, realiza el pago.'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: const Text('Pagar'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => PaymentPage(
+                                            totalCost: _totalCost,
+                                            ticketType: _selectedTicketType!,
+                                            ticketQuantity: _selectedTicketQuantity!,
+                                            additionalService: _selectedAdditionalService ?? 'Ninguno',
+                                            userId: widget.userId,
+                                            reservationId: reservationId,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
                           );
-                        },
-                      );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Failed to create reservation')),
+                          );
+                        }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Failed to create ticket')),
+                        );
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                    backgroundColor: const Color(0xFFFFA726), // Naranja
+                    backgroundColor: const Color(0xFFFFA726),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: const Text(
@@ -204,7 +259,6 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
       ),
     );
   }
-
 
   Widget _buildTextField({
     required String label,
@@ -231,7 +285,6 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
       validator: validator,
     );
   }
-
 
   Widget _buildDropdownField<T>({
     required String label,

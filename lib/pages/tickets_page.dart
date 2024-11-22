@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../widgets/custom_bottom_navigation_bar.dart';
 import '../widgets/custom_app_bar.dart';
 import 'tickets_detail_page.dart';
 
 class TicketsPage extends StatefulWidget {
   final bool isAdmin;
-  final int userId; // Add userId parameter
+  final int userId;
 
   const TicketsPage({super.key, required this.isAdmin, required this.userId});
 
@@ -15,6 +17,28 @@ class TicketsPage extends StatefulWidget {
 
 class _TicketsPageState extends State<TicketsPage> {
   int _selectedIndex = 3;
+  List<dynamic> upcomingTickets = [];
+  List<dynamic> pastTickets = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTickets();
+  }
+
+  Future<void> fetchTickets() async {
+    final response = await http.get(Uri.parse('http://your-backend-url/api/tickets'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> tickets = json.decode(response.body);
+      setState(() {
+        upcomingTickets = tickets.where((ticket) => DateTime.parse(ticket['date']).isAfter(DateTime.now())).toList();
+        pastTickets = tickets.where((ticket) => DateTime.parse(ticket['date']).isBefore(DateTime.now())).toList();
+      });
+    } else {
+      throw Exception('Failed to load tickets');
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -29,8 +53,8 @@ class _TicketsPageState extends State<TicketsPage> {
       child: Scaffold(
         appBar: CustomAppBar(
           title: 'Eventra',
-          isAdmin: widget.isAdmin, // Pass the isAdmin parameter here
-          userId: widget.userId, // Pass the userId parameter here
+          isAdmin: widget.isAdmin,
+          userId: widget.userId,
           bottom: const TabBar(
             labelColor: Colors.white,
             unselectedLabelColor: Colors.grey,
@@ -45,85 +69,33 @@ class _TicketsPageState extends State<TicketsPage> {
           children: [
             ListView(
               padding: const EdgeInsets.all(16.0),
-              children: [
-                _buildTicketCard(
-                  context,
-                  image: 'assets/jazz_festival.png',
-                  title: 'Jazz Festival',
-                  date: '25 Noviembre',
-                  time: '7:00 pm',
-                  description: 'Un festival de jazz con artistas internacionales.',
-                ),
-                _buildTicketCard(
-                  context,
-                  image: 'assets/music_festival.png',
-                  title: 'Music Festival',
-                  date: '10 Noviembre',
-                  time: '6:00 pm',
-                  description: 'Un festival de música y arte vibrante que celebra la cultura.',
-                ),
-                _buildTicketCard(
-                  context,
-                  image: 'assets/food_festival.png',
-                  title: 'Festival de comida',
-                  date: '5 Octubre',
-                  time: '12:00 pm',
-                  description: 'Un festival para degustar comidas de diferentes culturas.',
-                ),
-                _buildTicketCard(
-                  context,
-                  image: 'assets/ceramics_workshop.png',
-                  title: 'Taller de cerámica',
-                  date: '10 Octubre',
-                  time: '6:00 pm',
-                  description: 'Un taller donde puedes aprender a hacer piezas de cerámica.',
-                ),
-              ],
+              children: upcomingTickets.map((ticket) => _buildTicketCard(
+                context,
+                image: ticket['image'],
+                title: ticket['title'],
+                date: ticket['date'],
+                time: ticket['time'],
+                description: ticket['description'],
+              )).toList(),
             ),
             ListView(
               padding: const EdgeInsets.all(16.0),
-              children: [
-                _buildTicketCard(
-                  context,
-                  image: 'assets/exhibition.png',
-                  title: 'Exposición de Arte',
-                  date: '20 Septiembre',
-                  time: '5:00 pm',
-                  description: 'Una exposición que muestra obras de artistas locales.',
-                ),
-                _buildTicketCard(
-                  context,
-                  image: 'assets/theater.png',
-                  title: 'Obra de Teatro',
-                  date: '15 Septiembre',
-                  time: '8:00 pm',
-                  description: 'Una comedia dramática que no te puedes perder.',
-                ),
-                _buildTicketCard(
-                  context,
-                  image: 'assets/concert.png',
-                  title: 'Concierto de Rock',
-                  date: '10 Agosto',
-                  time: '9:00 pm',
-                  description: 'Una noche de rock en vivo con bandas locales.',
-                ),
-                _buildTicketCard(
-                  context,
-                  image: 'assets/food_festival.png',
-                  title: 'Festival de Comida',
-                  date: '5 Julio',
-                  time: '3:00 pm',
-                  description: 'Muestra de diferentes tipos de comida.',
-                ),
-              ],
+              children: pastTickets.map((ticket) => _buildTicketCard(
+                context,
+                image: ticket['image'],
+                title: ticket['title'],
+                date: ticket['date'],
+                time: ticket['time'],
+                description: ticket['description'],
+              )).toList(),
             ),
           ],
         ),
         bottomNavigationBar: CustomBottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
-          isAdmin: widget.isAdmin, // Pass the isAdmin parameter here
-          userId: widget.userId, // Pass the userId parameter here
+          isAdmin: widget.isAdmin,
+          userId: widget.userId,
         ),
       ),
     );
@@ -147,7 +119,7 @@ class _TicketsPageState extends State<TicketsPage> {
         contentPadding: const EdgeInsets.all(12.0),
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8.0),
-          child: Image.asset(
+          child: Image.network(
             image,
             width: 70,
             height: 70,

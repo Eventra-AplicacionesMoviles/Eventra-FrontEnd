@@ -2,6 +2,7 @@ import 'package:eventra_app/pages/reservation_page.dart';
 import 'package:eventra_app/pages/search_page.dart';
 import 'package:eventra_app/pages/tickets_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
 import '../widgets/custom_app_bar.dart';
@@ -13,7 +14,7 @@ import '../models/category_event_response.dart';
 
 class AddEventPage extends StatefulWidget {
   final bool isAdmin;
-  final int userId; // Add userId parameter
+  final int userId;
 
   const AddEventPage({super.key, required this.isAdmin, required this.userId});
 
@@ -33,6 +34,7 @@ class _AddEventPageState extends State<AddEventPage> {
   DateTime? _endDate;
   int _selectedIndex = 2;
   List<CategoryEventResponse> _categories = [];
+  final storage = FlutterSecureStorage();
 
   @override
   void initState() {
@@ -42,13 +44,20 @@ class _AddEventPageState extends State<AddEventPage> {
 
   void _fetchCategories() async {
     try {
-      List<dynamic> categories = await ApiService().fetchCategories();
+      String? token = await storage.read(key: 'jwt_token');
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: No token found')),
+        );
+        return;
+      }
+      List<dynamic> categories = await ApiService().fetchCategories(token);
       setState(() {
         _categories = categories.cast<CategoryEventResponse>();
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load categories')),
+        const SnackBar(content: Text('Failed to load categories')),
       );
     }
   }
@@ -201,7 +210,7 @@ class _AddEventPageState extends State<AddEventPage> {
     if (_formKey.currentState!.validate()) {
       if (_startDate == null || _endDate == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Por favor, selecciona las fechas de inicio y fin.')),
+          const SnackBar(content: Text('Por favor, selecciona las fechas de inicio y fin.')),
         );
         return;
       }
@@ -212,15 +221,22 @@ class _AddEventPageState extends State<AddEventPage> {
         startDate: dateFormat.format(_startDate!),
         endDate: dateFormat.format(_endDate!),
         location: _locationController.text,
-        organizerId: widget.userId, // Use the userId from the widget
+        organizerId: widget.userId,
         categoryId: _categories.firstWhere((category) => category.name == _selectedCategory).id,
         url: _urlController.text,
       );
 
       try {
-        await ApiService().createEvent(eventRequest);
+        String? token = await storage.read(key: 'jwt_token');
+        if (token == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error: No token found')),
+          );
+          return;
+        }
+        await ApiService().createEvent(eventRequest, token);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Evento creado exitosamente')),
+          const SnackBar(content: Text('Evento creado exitosamente')),
         );
         _formKey.currentState!.reset();
         setState(() {
@@ -230,7 +246,7 @@ class _AddEventPageState extends State<AddEventPage> {
         });
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al crear el evento')),
+          const SnackBar(content: Text('Error al crear el evento')),
         );
       }
     }
@@ -282,14 +298,14 @@ class _AddEventPageState extends State<AddEventPage> {
                 const SizedBox(height: 20),
                 TextField(
                   controller: _titleController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Nombre de evento',
                     border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Category',
                     border: OutlineInputBorder(),
                   ),
@@ -360,7 +376,7 @@ class _AddEventPageState extends State<AddEventPage> {
                 const SizedBox(height: 20),
                 TextField(
                   controller: _locationController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Ubicación',
                     border: OutlineInputBorder(),
                     suffixIcon: Icon(Icons.location_on),
@@ -370,7 +386,7 @@ class _AddEventPageState extends State<AddEventPage> {
                 TextField(
                   controller: _descriptionController,
                   maxLines: 3,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Descripción',
                     border: OutlineInputBorder(),
                   ),
@@ -378,7 +394,7 @@ class _AddEventPageState extends State<AddEventPage> {
                 const SizedBox(height: 20),
                 TextField(
                   controller: _urlController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'URL',
                     border: OutlineInputBorder(),
                   ),
@@ -386,7 +402,7 @@ class _AddEventPageState extends State<AddEventPage> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: _submitForm,
-                  child: Text('Crear Evento'),
+                  child: const Text('Crear Evento'),
                 ),
               ],
             ),

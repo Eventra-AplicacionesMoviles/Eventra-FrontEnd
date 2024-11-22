@@ -5,15 +5,27 @@ import 'event_inscription.dart';
 class EventDetailPage extends StatefulWidget {
   final String imagePath;
   final String title;
+  final String date;
+  final String time;
+  final String location;
+  final String organizer;
+  final String description;
   final bool isAdmin;
-  final int userId; // Add userId parameter
+  final int userId;
+  final int eventId;
 
   const EventDetailPage({
     super.key,
     required this.imagePath,
     required this.title,
+    required this.date,
+    required this.time,
+    required this.location,
+    required this.organizer,
+    required this.description,
     required this.isAdmin,
-    required this.userId, // Add this parameter to the constructor
+    required this.userId,
+    required this.eventId,
   });
 
   @override
@@ -38,7 +50,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
           const CircleAvatar(
             backgroundImage: AssetImage('assets/user_profile.png'),
           ),
-          const SizedBox(width: 16), // Espacio entre el título y el avatar
+          const SizedBox(width: 16),
         ],
       ),
       body: SingleChildScrollView(
@@ -59,7 +71,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
-                child: Image.asset(
+                child: Image.network(
                   widget.imagePath,
                   width: double.infinity,
                   height: 220,
@@ -93,7 +105,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         const Icon(Icons.calendar_today, size: 20, color: Colors.grey),
                         const SizedBox(width: 8),
                         Text(
-                          '10 Noviembre',
+                          widget.date,
                           style: TextStyle(
                             color: Colors.grey[800],
                             fontSize: 16,
@@ -107,7 +119,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         const Icon(Icons.access_time, size: 20, color: Colors.grey),
                         const SizedBox(width: 8),
                         Text(
-                          '6:00 pm',
+                          widget.time,
                           style: TextStyle(
                             color: Colors.grey[800],
                             fontSize: 16,
@@ -121,7 +133,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         const Icon(Icons.location_on, size: 20, color: Colors.grey),
                         const SizedBox(width: 8),
                         Text(
-                          'Parque Central, Lima',
+                          widget.location,
                           style: TextStyle(
                             color: Colors.grey[800],
                             fontSize: 16,
@@ -134,13 +146,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Organizador: euphoriafest',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              'Organizador: ${widget.organizer}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
-              'Un festival de música y arte vibrante que celebra la cultura, la creatividad y la comunidad.',
+              widget.description,
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[700],
@@ -182,7 +194,11 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => EventRegistrationPage(eventName: widget.title),
+                          builder: (context) => EventRegistrationPage(
+                            eventName: widget.title,
+                            userId: widget.userId,
+                            eventId: widget.eventId,
+                          ),
                         ),
                       );
                     },
@@ -203,8 +219,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        isAdmin: widget.isAdmin, // Pass the isAdmin parameter here
-        userId: widget.userId, // Pass the userId parameter here
+        isAdmin: widget.isAdmin,
+        userId: widget.userId,
       ),
     );
   }
