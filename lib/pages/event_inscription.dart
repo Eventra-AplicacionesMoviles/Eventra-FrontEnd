@@ -1,3 +1,4 @@
+import 'package:eventra_app/pages/mp_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -5,6 +6,7 @@ import 'payment_page.dart';
 
 class EventRegistrationPage extends StatefulWidget {
   final String eventName;
+  final bool isAdmin;
   final int userId;
   final int eventId;
 
@@ -13,6 +15,7 @@ class EventRegistrationPage extends StatefulWidget {
     required this.eventName,
     required this.userId,
     required this.eventId,
+    required this.isAdmin,
   });
 
   @override
@@ -98,6 +101,32 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
       print('Failed to create reservation: ${response.body}');
       return null;
     }
+  }
+
+  Future<String?> _getPaymentLink(int reservationId) async{
+    final paymentUrl = 'http://10.0.2.2:8080/api/payments/process-payment';
+    final paymentData = {
+      'reservationId': reservationId,
+      'amount': _selectedTicketQuantity,
+      'paymentMethod': 'Visa', // Puedes cambiar esto según tu lógica
+      'statusId': 1, // Puedes ajustar este valor según lo necesites
+      'paymentDate': DateTime.now().toIso8601String(), // Fecha actual
+    };
+
+    final response = await http.post(
+      Uri.parse(paymentUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(paymentData),
+    );
+
+    if (response.statusCode == 201) {
+      final responseData = jsonDecode(response.body);
+      return responseData['sandboxInitPoint'];
+    } else {
+      print('Failed to get payment form: ${response.body}');
+      return null;
+    }
+
   }
 
   @override
@@ -209,21 +238,14 @@ class _EventRegistrationPageState extends State<EventRegistrationPage> {
                                 actions: <Widget>[
                                   TextButton(
                                     child: const Text('Pagar'),
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => PaymentPage(
-                                            totalCost: _totalCost,
-                                            ticketType: _selectedTicketType!,
-                                            ticketQuantity: _selectedTicketQuantity!,
-                                            additionalService: _selectedAdditionalService ?? 'Ninguno',
-                                            userId: widget.userId,
-                                            reservationId: reservationId,
-                                          ),
-                                        ),
-                                      );
+                                    onPressed: () async {
+                                      var urlResponse = await _getPaymentLink(reservationId);
+                                      print(urlResponse);
+                                      if(context.mounted){
+                                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) =>
+                                            MpPage(url: urlResponse, isAdmin: widget.isAdmin, userId: widget.userId,)));
+
+                                      }
                                     },
                                   ),
                                 ],

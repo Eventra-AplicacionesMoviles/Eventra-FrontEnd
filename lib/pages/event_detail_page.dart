@@ -197,6 +197,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           builder: (context) => EventRegistrationPage(
                             eventName: widget.title,
                             userId: widget.userId,
+                            isAdmin: widget.isAdmin,
                             eventId: widget.eventId,
                           ),
                         ),
